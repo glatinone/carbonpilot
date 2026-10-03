@@ -1,0 +1,30 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# --- Local databases + generated demo data ---
+backend/carbonpilot.db
+backend/carbonpilot.db-journal
+backend/demo_data/
+
+# --- Secrets ---
+.env
+*.env.local
+
+# --- Node / Next ---
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

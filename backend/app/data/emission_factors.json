@@ -1,0 +1,213 @@
+{
+  "meta": {
+    "description": "Emission factor library for CarbonPilot. Values are kgCO2e per unit of activity. Curated from public datasets so every calculation has a traceable source trail.",
+    "methodology": "GHG Protocol Corporate Standard (Scope 1 / 2 / 3)",
+    "note": "Factors are point estimates for prototype use. Production would pull live factors from Climatiq or the issuing authority."
+  },
+  "factors": [
+    {
+      "activity_type": "electricity_kwh",
+      "label": "Purchased electricity — grid mix",
+      "category": "electricity",
+      "scope": 2,
+      "unit": "kWh",
+      "region": "WORLD",
+      "kg_co2e": 0.436,
+      "year": 2025,
+      "source": "IEA Electricity Maps / GHG Protocol Scope 2 (location-based)",
+      "uncertainty_pct": 15
+    },
+    {
+      "activity_type": "electricity_kwh",
+      "label": "Purchased electricity — Indonesia grid",
+      "category": "electricity",
+      "scope": 2,
+      "unit": "kWh",
+      "region": "ID",
+      "kg_co2e": 0.712,
+      "year": 2025,
+      "source": "Indonesia MEMR grid emission factor (Jamali) / IEA",
+      "uncertainty_pct": 12
+    },
+    {
+      "activity_type": "electricity_kwh",
+      "label": "Purchased electricity — Singapore grid",
+      "category": "electricity",
+      "scope": 2,
+      "unit": "kWh",
+      "region": "SG",
+      "kg_co2e": 0.408,
+      "year": 2025,
+      "source": "EMA Singapore grid emission factor",
+      "uncertainty_pct": 10
+    },
+    {
+      "activity_type": "electricity_kwh",
+      "label": "Purchased electricity — UK grid",
+      "category": "electricity",
+      "scope": 2,
+      "unit": "kWh",
+      "region": "UK",
+      "kg_co2e": 0.2071,
+      "year": 2026,
+      "source": "UK Government GHG Conversion Factors 2026 (electricity generated)",
+      "uncertainty_pct": 8
+    },
+    {
+      "activity_type": "cloud_compute_vcpu_hour",
+      "label": "Cloud compute (vCPU-hour, includes PUE + embodied)",
+      "category": "cloud",
+      "scope": 3,
+      "unit": "vCPU_hours",
+      "region": "WORLD",
+      "kg_co2e": 0.0004,
+      "year": 2025,
+      "source": "Cloud Carbon Footprint methodology (min/max watts per vCPU x PUE 1.2, + embodied)",
+      "uncertainty_pct": 40
+    },
+    {
+      "activity_type": "cloud_storage_gb_month",
+      "label": "Cloud storage (GB-month, includes replication + embodied)",
+      "category": "cloud",
+      "scope": 3,
+      "unit": "GB_month",
+      "region": "WORLD",
+      "kg_co2e": 0.0008,
+      "year": 2025,
+      "source": "Cloud Carbon Footprint methodology (SSD/HDD energy x PUE x replication factor)",
+      "uncertainty_pct": 40
+    },
+    {
+      "activity_type": "cloud_network_gb",
+      "label": "Cloud data transfer (GB egress)",
+      "category": "cloud",
+      "scope": 3,
+      "unit": "GB",
+      "region": "WORLD",
+      "kg_co2e": 0.059,
+      "year": 2025,
+      "source": "Cloud Carbon Footprint methodology (network energy intensity)",
+      "uncertainty_pct": 45
+    },
+    {
+      "activity_type": "flight_passenger_km",
+      "label": "Business travel — flight (blended short/long-haul, with radiative forcing)",
+      "category": "travel",
+      "scope": 3,
+      "unit": "passenger_km",
+      "region": "WORLD",
+      "kg_co2e": 0.1520,
+      "year": 2026,
+      "source": "UK Government GHG Conversion Factors 2026 — domestic/short-haul/long-haul weighted by typical corporate mix, with RF",
+      "uncertainty_pct": 30
+    },
+    {
+      "activity_type": "train_passenger_km",
+      "label": "Business travel — rail",
+      "category": "travel",
+      "scope": 3,
+      "unit": "passenger_km",
+      "region": "WORLD",
+      "kg_co2e": 0.0298,
+      "year": 2026,
+      "source": "UK Government GHG Conversion Factors 2026 — national rail",
+      "uncertainty_pct": 20
+    },
+    {
+      "activity_type": "hotel_night",
+      "label": "Business travel — hotel stay",
+      "category": "travel",
+      "scope": 3,
+      "unit": "room_night",
+      "region": "WORLD",
+      "kg_co2e": 10.4,
+      "year": 2026,
+      "source": "UK Government GHG Conversion Factors 2026 — hotel stay",
+      "uncertainty_pct": 35
+    },
+    {
+      "activity_type": "car_km",
+      "label": "Business travel — car (average car)",
+      "category": "travel",
+      "scope": 3,
+      "unit": "km",
+      "region": "WORLD",
+      "kg_co2e": 0.1704,
+      "year": 2026,
+      "source": "UK Government GHG Conversion Factors 2026 — average car",
+      "uncertainty_pct": 25
+    },
+    {
+      "activity_type": "diesel_litre",
+      "label": "Company fleet — diesel",
+      "category": "fleet",
+      "scope": 1,
+      "unit": "litre",
+      "region": "WORLD",
+      "kg_co2e": 2.5123,
+      "year": 2026,
+      "source": "UK Government GHG Conversion Factors 2026 — diesel (average biofuel blend)",
+      "uncertainty_pct": 6
+    },
+    {
+      "activity_type": "petrol_litre",
+      "label": "Company fleet — petrol",
+      "category": "fleet",
+      "scope": 1,
+      "unit": "litre",
+      "region": "WORLD",
+      "kg_co2e": 2.1681,
+      "year": 2026,
+      "source": "UK Government GHG Conversion Factors 2026 — petrol (average biofuel blend)",
+      "uncertainty_pct": 6
+    },
+    {
+      "activity_type": "natural_gas_kwh",
+      "label": "Stationary combustion — natural gas",
+      "category": "electricity",
+      "scope": 1,
+      "unit": "kWh",
+      "region": "WORLD",
+      "kg_co2e": 0.1829,
+      "year": 2026,
+      "source": "UK Government GHG Conversion Factors 2026 — natural gas",
+      "uncertainty_pct": 5
+    },
+    {
+      "activity_type": "procurement_usd",
+      "label": "Purchased goods & services (spend-based)",
+      "category": "procurement",
+      "scope": 3,
+      "unit": "USD",
+      "region": "WORLD",
+      "kg_co2e": 0.28,
+      "year": 2025,
+      "source": "EPA Supply Chain GHG Emission Factors (spend-based), sector average",
+      "uncertainty_pct": 60
+    },
+    {
+      "activity_type": "waste_landfill_kg",
+      "label": "Waste sent to landfill",
+      "category": "other",
+      "scope": 3,
+      "unit": "kg",
+      "region": "WORLD",
+      "kg_co2e": 0.4588,
+      "year": 2026,
+      "source": "UK Government GHG Conversion Factors 2026 — waste disposal",
+      "uncertainty_pct": 30
+    },
+    {
+      "activity_type": "water_m3",
+      "label": "Water supply and treatment",
+      "category": "other",
+      "scope": 3,
+      "unit": "m3",
+      "region": "WORLD",
+      "kg_co2e": 0.1770,
+      "year": 2026,
+      "source": "UK Government GHG Conversion Factors 2026 — water supply + treatment",
+      "uncertainty_pct": 25
+    }
+  ]
+}

@@ -11,6 +11,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.engine import anomaly, calculator, factors, recommender, scenario
@@ -154,6 +155,20 @@ def tool_create_action(
     if not rec or rec.company_id != company_id:
         return {"error": f"Recommendation {recommendation_id} not found for this company."}
 
+    # Idempotent, for the same reason the HTTP route is: the plan sums every
+    # tracked action, so a second approval must not double-count the impact.
+    existing = db.scalar(
+        select(ActionItem).where(
+            ActionItem.company_id == company_id,
+            ActionItem.recommendation_id == rec.id,
+        )
+    )
+    if existing is not None:
+        rec.status = "approved"
+        db.commit()
+        db.refresh(existing)
+        return _action_payload(existing, already_tracked=True)
+
     action = ActionItem(
         company_id=company_id,
         recommendation_id=rec.id,
@@ -168,7 +183,11 @@ def tool_create_action(
     db.commit()
     db.refresh(action)
 
-    return {
+    return _action_payload(action)
+
+
+def _action_payload(action: ActionItem, already_tracked: bool = False) -> dict:
+    payload = {
         "action_id": action.id,
         "owner": action.owner,
         "task": action.task,
@@ -176,6 +195,9 @@ def tool_create_action(
         "expected_cost_usd": action.expected_cost_usd,
         "status": action.status,
     }
+    if already_tracked:
+        payload["note"] = "This recommendation already has a tracked action; returning it."
+    return payload
 
 
 # --------------------------------------------------------------------------- #

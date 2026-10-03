@@ -41,6 +41,18 @@ def regenerate(company_id: int = Query(1), db: Session = Depends(get_db)) -> dic
     return {"count": len(recs), "recommendations": [recommender.to_dict(r) for r in recs]}
 
 
+def _action_dict(row: ActionItem) -> dict:
+    """The wire shape for one action — shared by create and list."""
+    return {
+        "id": row.id,
+        "owner": row.owner,
+        "task": row.task,
+        "expected_carbon_t": row.expected_carbon_t,
+        "expected_cost_usd": row.expected_cost_usd,
+        "status": row.status,
+    }
+
+
 @router.post("/actions")
 def create_action(
     payload: ActionCreate,
@@ -56,6 +68,21 @@ def create_action(
             raise HTTPException(status_code=404, detail="Recommendation not found")
         rec.status = "approved"
 
+        # Approving is idempotent. A second click (or a double-submit) must not
+        # create a second action for the same recommendation — the plan's totals
+        # sum every tracked action, so a duplicate silently double-counts its
+        # impact.
+        existing = db.scalar(
+            select(ActionItem).where(
+                ActionItem.company_id == company_id,
+                ActionItem.recommendation_id == rec.id,
+            )
+        )
+        if existing is not None:
+            db.commit()  # persist the approval itself
+            db.refresh(existing)
+            return _action_dict(existing)
+
     action = ActionItem(
         company_id=company_id,
         recommendation_id=rec.id if rec else None,
@@ -69,14 +96,7 @@ def create_action(
     db.commit()
     db.refresh(action)
 
-    return {
-        "id": action.id,
-        "owner": action.owner,
-        "task": action.task,
-        "expected_carbon_t": action.expected_carbon_t,
-        "expected_cost_usd": action.expected_cost_usd,
-        "status": action.status,
-    }
+    return _action_dict(action)
 
 
 def _action_rows(db: Session, company_id: int) -> list[ActionItem]:
@@ -106,17 +126,7 @@ def list_actions(company_id: int = Query(1), db: Session = Depends(get_db)) -> d
         },
         # Overlapping actions would double-count; the plan view sums a chosen set.
         "note": "Totals assume every open action is executed; individual actions may overlap.",
-        "actions": [
-            {
-                "id": r.id,
-                "owner": r.owner,
-                "task": r.task,
-                "expected_carbon_t": r.expected_carbon_t,
-                "expected_cost_usd": r.expected_cost_usd,
-                "status": r.status,
-            }
-            for r in rows
-        ],
+        "actions": [_action_dict(r) for r in rows],
     }
 
 

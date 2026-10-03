@@ -39,7 +39,7 @@ export function ErrorBanner({ message, onRetry }: { message: string; onRetry?: (
       <p className="mt-2 text-xs text-slate-500">
         Start the backend with{" "}
         <code className="rounded bg-ink-950 px-1.5 py-0.5 font-mono text-[11px] text-slate-300">
-          python -m uvicorn app.main:app --port 8000
+          python -m uvicorn app.main:app --port 8008
         </code>
       </p>
       {onRetry && (

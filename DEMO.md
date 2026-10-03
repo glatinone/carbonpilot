@@ -1,6 +1,6 @@
 # CarbonPilot — 3-minute demo script
 
-Run order: backend on :8000, frontend on :3000. Reset the demo data before you present.
+Run order: backend on :8008, frontend on :3000. Reset the demo data before you present.
 
 ```bash
 cd backend && .venv/Scripts/python -m app.seed --seed-db
@@ -100,7 +100,7 @@ Click **Create Action**, assign the owner.
 ## Rehearsal checklist
 
 - [ ] `python -m app.seed --seed-db` run right before presenting (resets actions and scenario history)
-- [ ] Backend reachable: open http://localhost:8000/api/health and confirm `"status":"ok"`
+- [ ] Backend reachable: open http://localhost:8008/api/health and confirm `"status":"ok"`
 - [ ] If it says `"llm_enabled": false`, either add the key or acknowledge the deterministic mode —
       do not let a judge discover it on screen
 - [ ] Frontend loaded at http://localhost:3000, and the Ask panel already answered once (proves

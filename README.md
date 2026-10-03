@@ -84,10 +84,10 @@ uv venv --python 3.12 .venv
 uv pip install --python .venv -e ".[dev]"
 cp .env.example .env                    # add GEMINI_API_KEY (optional — see below)
 .venv/Scripts/python -m app.seed --csv ./demo_data --seed-db
-.venv/Scripts/python -m uvicorn app.main:app --reload --port 8000
+.venv/Scripts/python -m uvicorn app.main:app --reload --port 8008
 ```
 
-- API docs: http://localhost:8000/docs
+- API docs: http://localhost:8008/docs
 - Without a Gemini key the app still runs end to end: the agent falls back to a deterministic
   router and the UI labels the response `Deterministic engine` instead of `Gemini`.
 

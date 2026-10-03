@@ -109,6 +109,33 @@ def tool_search_emission_factors(db: Session, company_id: int, query: str) -> di
     return {"query": query, "count": len(found), "factors": [factors.factor_to_dict(f) for f in found]}
 
 
+def tool_search_methodology(db: Session, company_id: int, query: str, k: int = 4) -> dict:
+    """Retrieve the methodology passages that back a claim.
+
+    The factor library answers "what number was used"; this answers "why is that
+    number defensible" — GHG Protocol scope rules, spend-based caveats, grid and
+    conversion-factor sources, cloud methodology, uncertainty treatment. Without
+    it the model would explain methodology from its own recollection.
+    """
+    from app.engine import retrieval
+
+    passages = retrieval.search(query, k=max(1, min(int(k), 8)))
+    return {
+        "query": query,
+        "count": len(passages),
+        "passages": [
+            {
+                "source": p["source"],
+                "section": p["section"],
+                "topic": p["topic"],
+                "text": p["text"],
+                "score": p["score"],
+            }
+            for p in passages
+        ],
+    }
+
+
 def tool_list_recommendations(db: Session, company_id: int) -> dict:
     """Ranked decarbonisation actions (carbon x cost x effort), best first."""
     from app.engine.recommender import generate
@@ -276,6 +303,30 @@ TOOLS: dict[str, dict[str, Any]] = {
             "required": ["query"],
         },
     },
+    "search_methodology": {
+        "fn": tool_search_methodology,
+        "description": (
+            "Retrieve the carbon-accounting methodology passages behind a claim: GHG Protocol scope "
+            "definitions, Scope 2 location vs market based, spend-based Scope 3 caveats, grid and "
+            "conversion-factor sources, Cloud Carbon Footprint method, uncertainty propagation, and "
+            "robust spike detection. Call this whenever you explain HOW a figure was derived or which "
+            "scope/method applies, then cite the returned source and section."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "What needs grounding, e.g. 'why is spend-based procurement uncertain'.",
+                },
+                "k": {
+                    "type": "integer",
+                    "description": "How many passages to return. Default 4, maximum 8.",
+                },
+            },
+            "required": ["query"],
+        },
+    },
     "list_recommendations": {
         "fn": tool_list_recommendations,
         "description": "List ranked decarbonisation actions with carbon impact, cost impact, effort and confidence.",
@@ -335,6 +386,12 @@ def summarize(name: str, result: dict) -> str:
         return f"action #{result.get('action_id')} for {result.get('owner')}"
     if name == "search_emission_factors":
         return f"{result.get('count', 0)} factor(s) for {result.get('query')!r}"
+    if name == "search_methodology":
+        top = (result.get("passages") or [{}])[0]
+        return (
+            f"{result.get('count', 0)} methodology passage(s); "
+            f"top = {top.get('source')} — {top.get('section')}"
+        )
     if name == "compare_month":
         if "error" in result:
             return f"compare_month: {result['error']}"

@@ -22,19 +22,32 @@ from app.config import get_settings
 
 MAX_STEPS = 6
 
+# Model id the agent actually ran with. Gateways namespace model ids (e.g.
+# `google/gemini-2.5-flash`), so the model that ends up being called is not
+# always the one configured — /api/health reports both so they are never
+# confused for each other.
+_RESOLVED_MODEL: str | None = None
+
+
+def resolved_model() -> str | None:
+    """Last model id the agent actually called, or None before the first call."""
+    return _RESOLVED_MODEL
+
 SYSTEM_INSTRUCTION = """You are CarbonPilot, a carbon decision engine for sustainability and operations managers.
 
 RULES (non-negotiable):
 1. NEVER invent a carbon number, cost figure, or emission factor. Every number you state must come from a tool result.
-2. Always call tools before answering a quantitative question:
+2. Always call at least one tool before answering, even when the question is ambiguous. If the period, unit or scope is unclear, call a tool to establish it (get_monthly_series lists the months that exist) rather than asking the user to clarify.
    - "why" / "what happened" → detect_anomalies, then explain_anomaly for the top result (always attribute the driver, not just the magnitude)
    - "what if" / "reduce by X%" → find_feasible_scenarios when a constraint is given, run_scenario otherwise
    - "what should we do" → list_recommendations
    - "how much / total / breakdown" → get_baseline, then get_emission_breakdown
+   - "how is this calculated / what is the method / which scope" → search_methodology
 3. After tool results come back, answer in at most 5 sentences. Lead with the number, then the driver, then the recommended action.
 4. Always state the assumption behind an estimate and the confidence level when you present an estimate.
 5. Mention the emission factor source when you cite a factor.
 6. If a tool returns an error, adapt and try a different tool or argument rather than guessing.
+7. When you explain HOW a figure was derived, or which scope/method applies, ground the explanation in search_methodology and cite the passage's source and section. Do not explain methodology from your own recollection when a retrieved passage covers it.
 
 You are advising an operations manager who must justify spend to their CFO: give them carbon impact, financial impact, effort and confidence together.
 """
@@ -96,13 +109,14 @@ def _resolve_model(client, preferred: str) -> str:
 # --------------------------------------------------------------------------- #
 
 def _gemini_chat(db: Session, company_id: int, message: str) -> dict:
+    global _RESOLVED_MODEL
+
     from google import genai
     from google.genai import types
 
     settings = get_settings()
     client = genai.Client(api_key=settings.llm_key)
     model = _resolve_model(client, settings.gemini_model)
-
 
     declarations = [
         types.FunctionDeclaration(
@@ -113,17 +127,30 @@ def _gemini_chat(db: Session, company_id: int, message: str) -> dict:
         for name, spec in tools.TOOLS.items()
     ]
 
-    config = types.GenerateContentConfig(
-        system_instruction=SYSTEM_INSTRUCTION,
-        tools=[types.Tool(function_declarations=declarations)],
-        temperature=0.2,
-    )
+    def build_config(mode: types.FunctionCallingConfigMode) -> types.GenerateContentConfig:
+        return types.GenerateContentConfig(
+            system_instruction=SYSTEM_INSTRUCTION,
+            tools=[types.Tool(function_declarations=declarations)],
+            temperature=0.2,
+            # The first step is forced to call a tool. Left on AUTO the model
+            # sometimes answers a quantitative question from its own head, or
+            # asks for a clarification it could have looked up — the one
+            # failure mode that breaks the product's central promise.
+            tool_config=types.ToolConfig(
+                function_calling_config=types.FunctionCallingConfig(mode=mode)
+            ),
+        )
 
     contents: list[Any] = [types.Content(role="user", parts=[types.Part(text=message)])]
     trace: list[dict] = []
     answer = ""
 
-    for _ in range(MAX_STEPS):
+    for step in range(MAX_STEPS):
+        config = build_config(
+            types.FunctionCallingConfigMode.ANY
+            if step == 0
+            else types.FunctionCallingConfigMode.AUTO
+        )
         try:
             response = client.models.generate_content(
                 model=model, contents=contents, config=config
@@ -140,6 +167,7 @@ def _gemini_chat(db: Session, company_id: int, message: str) -> dict:
                 model=model, contents=contents, config=config
             )
 
+        _RESOLVED_MODEL = model
         calls = getattr(response, "function_calls", None) or []
         if not calls:
             answer = (getattr(response, "text", "") or "").strip()
@@ -206,6 +234,23 @@ _CATEGORY_HINTS = {
 }
 
 
+# Intent cues for the offline router. Matched on word boundaries with their
+# inflections, because plain substring tests quietly miss the natural phrasings
+# the demo actually uses: "reduce our carbon by 15%" has an object between the
+# verb and "by", and "increase" is not a substring of "increasing".
+_REDUCTION_RE = re.compile(
+    r"\b(reduce|reducing|cut|cutting|lower|lowering|decrease|decreasing"
+    r"|shrink|kurangi|turunkan)\b"
+)
+_COST_CONSTRAINT_RE = re.compile(
+    r"(without (increasing|raising|adding)|no (additional|extra) cost"
+    r"|tanpa (menambah|menaikkan|nambah))"
+)
+_REASON_RE = re.compile(
+    r"\b(why|kenapa|reason|driver|drivers|increas\w*|rise|rising|rose|spike|naik)\b"
+)
+
+
 def _offline_chat(db: Session, company_id: int, message: str) -> dict:
     """Rule-based stand-in so the product is demoable without an API key."""
     text = message.lower()
@@ -225,22 +270,31 @@ def _offline_chat(db: Session, company_id: int, message: str) -> dict:
     percent = float(pct_match.group(1)) if pct_match else None
 
     category = next((v for k, v in _CATEGORY_HINTS.items() if k in text), None)
-    wants_reason = any(k in text for k in ["why", "kenapa", "reason", "driver", "increase", "naik"])
-    wants_whatif = any(k in text for k in ["what if", "what-if", "simulate", "scenario", "reduce by"])
+    wants_reason = _REASON_RE.search(text) is not None
     wants_action = any(k in text for k in ["should we do", "recommend", "action", "priorit", "what can we"])
     wants_explain = any(k in text for k in ["how much", "total", "footprint", "baseline", "berapa", "emission"])
 
+    # The demo's headline question — "reduce our carbon by 15% without
+    # increasing operating cost" — matches no fixed phrase, so the intent is
+    # detected from its parts: a reduction verb together with a target or a cost
+    # ceiling. The constraint branch must also win over the reason branch when
+    # both fire, because that sentence contains the word "increasing".
+    cost_ceiling = _COST_CONSTRAINT_RE.search(text) is not None
+    wants_constraint = percent is not None and _REDUCTION_RE.search(text) is not None
+    wants_whatif = any(k in text for k in ["what if", "what-if", "simulate", "scenario"])
+
     lines: list[str] = []
 
-    if wants_whatif and percent:
+    if cost_ceiling or wants_constraint or (wants_whatif and percent):
+        target = percent if percent is not None else 10.0
         constraints = call(
             "find_feasible_scenarios",
-            {"min_carbon_reduction_pct": percent, "max_cost_increase_usd": 0},
+            {"min_carbon_reduction_pct": target, "max_cost_increase_usd": 0},
         )
         best = constraints.get("recommended")
         if best:
             lines.append(
-                f"To cut at least {percent:.0f}% of emissions without raising cost, "
+                f"To cut at least {target:.0f}% of emissions without raising cost, "
                 f"the best combination is: {best['label']}."
             )
             lines.append(

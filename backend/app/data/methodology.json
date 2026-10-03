@@ -1,0 +1,184 @@
+{
+  "meta": {
+    "title": "CarbonPilot methodology corpus",
+    "note": "Neutral reference prose explaining how carbon figures are derived. Every passage is a factual statement of an established method or convention, kept free of product claims so it can be cited as a source of record.",
+    "sources": [
+      "GHG Protocol Corporate Standard",
+      "UK Government GHG Conversion Factors (DEFRA)",
+      "IEA",
+      "US EPA",
+      "Cloud Carbon Footprint",
+      "Indonesia MEMR (Jamali)"
+    ]
+  },
+  "passages": [
+    {
+      "id": "ghg-protocol-scope-1",
+      "source": "GHG Protocol Corporate Standard",
+      "section": "Scope 1 — direct emissions",
+      "topic": "scope-1",
+      "text": "Scope 1 covers direct greenhouse gas emissions from sources owned or controlled by the reporting organisation. Typical sources are fuel burned in company vehicles and boilers plus fugitive refrigerant losses from cooling equipment. Emissions are calculated from measured activity such as litres of fuel or kilograms of gas multiplied by a published emission factor. Scope 1 does not include electricity the organisation buys, because those emissions physically occur at the power station."
+    },
+    {
+      "id": "ghg-protocol-scope-2",
+      "source": "GHG Protocol Corporate Standard",
+      "section": "Scope 2 — purchased energy",
+      "topic": "scope-2",
+      "text": "Scope 2 accounts for indirect emissions from purchased electricity, heat, steam and cooling that the organisation consumes. The emissions physically occur where the energy is generated, so under the GHG Protocol they are reported separately from Scope 1. Scope 2 is the standard category for office and data-centre grid electricity. Both location-based and market-based figures may be reported for the same consumption."
+    },
+    {
+      "id": "ghg-protocol-scope-3",
+      "source": "GHG Protocol Corporate Standard",
+      "section": "Scope 3 — value chain",
+      "topic": "scope-3",
+      "text": "Scope 3 covers all other indirect emissions that occur in an organisation's value chain, both upstream and downstream. It spans purchased goods and services, business travel, employee commuting, waste, transport and the use of sold products. The protocol divides Scope 3 into fifteen categories so like emissions are compared with like. Scope 3 is optional under the strict minimum of the Corporate Standard but is required by most modern reporting regimes."
+    },
+    {
+      "id": "ghg-protocol-organisational-boundary",
+      "source": "GHG Protocol Corporate Standard",
+      "section": "Organisational boundary",
+      "topic": "boundary",
+      "text": "The organisational boundary decides which operations are inside the inventory's reporting perimeter. Companies choose one of three consolidation approaches: equity share, financial control or operational control. The same approach must then be applied consistently across every scope. A subsidiary that is excluded by the chosen boundary simply does not appear in the reported totals."
+    },
+    {
+      "id": "scope-2-location-vs-market",
+      "source": "GHG Protocol Corporate Standard",
+      "section": "Scope 2 — location vs market based",
+      "topic": "scope-2-method",
+      "text": "The location-based method for Scope 2 uses the average emission intensity of the grid where the electricity is consumed. The market-based method instead reflects the contractual instruments a purchaser has chosen, such as renewable energy certificates or power purchase agreements. A residual mix factor is used for any consumption not covered by a specific contract. Dual reporting exists because each figure answers a different question: one describes the physical grid, the other the purchasing decision."
+    },
+    {
+      "id": "scope-3-dominance-service-business",
+      "source": "GHG Protocol Corporate Standard",
+      "section": "Why Scope 3 dominates services",
+      "topic": "scope-3-dominance",
+      "text": "For most service businesses the majority of emissions sit in Scope 3 rather than in owned operations. A software or consulting firm may have almost no smokestack emissions, yet its purchased services, travel and data-centre use add up quickly. This makes Scope 3 both the largest opportunity and the hardest part of the inventory to measure precisely. Analysts therefore treat Scope 3 estimates as directional rather than exact."
+    },
+    {
+      "id": "spend-based-method",
+      "source": "US EPA",
+      "section": "Spend-based estimation",
+      "topic": "spend-based",
+      "text": "The spend-based method multiplies the money spent on a category by an emission factor per unit of currency. Those currency factors come from environmentally extended input-output (EEIO) models that average whole sectors. Spend-based figures are crude and uncertain: inflation, currency and product mix all distort the mapping from dollars to emissions. It carries the highest uncertainty of the estimation methods and is usually reserved for cases where activity data is unavailable."
+    },
+    {
+      "id": "largest-line-least-certain",
+      "source": "US EPA",
+      "section": "The uncertain biggest line",
+      "topic": "materiality",
+      "text": "Because spend-based estimation is applied to procurement, the single largest line in a company's footprint can also be the least certain one. A category may dominate the total while resting on a sector average rather than supplier-specific data. High materiality does not imply high accuracy. Good inventories flag this materiality-inside-uncertainty trap so decision-makers do not over-read the biggest number."
+    },
+    {
+      "id": "uk-government-conversion-factors",
+      "source": "UK Government GHG Conversion Factors (DEFRA)",
+      "section": "UK Government conversion factors",
+      "topic": "uk-factors",
+      "text": "The UK Government publishes a free annual set of greenhouse gas conversion factors for company reporting. It covers fuels, electricity generation, business travel, freight, water, waste and hotel stays, each expressed in kgCO2e per natural unit. The factors are updated every year as the grid decarbonises and methods improve. Using a consistent factor year matters, because mixing vintages breaks comparability."
+    },
+    {
+      "id": "activity-data-to-factor",
+      "source": "UK Government GHG Conversion Factors (DEFRA)",
+      "section": "Activity data to factor",
+      "topic": "activity-data",
+      "text": "Activity data is the physical quantity a company actually measures, such as metered kilowatt-hours, litres dispensed or kilometres flown. Applying a conversion factor means matching each measured quantity to the factor whose unit and boundary it shares. A units mismatch, for example cubic metres against kilowatt-hours, is a silent error that produces a plausible but wrong total. Traceable inventories keep the raw activity value beside the factor used."
+    },
+    {
+      "id": "indonesia-grid-jamali",
+      "source": "Indonesia MEMR (Jamali)",
+      "section": "Indonesia grid — Jamali",
+      "topic": "indonesia-grid",
+      "text": "Indonesia reports grid emission factors for its Jamali system, the interconnected Java-Madura-Bali network. Jamali is one of the more coal-intensive grids in the region, so its factor is materially higher than the UK or Singapore. The factor is published by the Ministry of Energy and Mineral Resources and updated as the generation mix changes. Applying a single national figure would misstate emissions in provinces served by different systems."
+    },
+    {
+      "id": "why-grid-intensity-is-regional",
+      "source": "IEA",
+      "section": "Why grid intensity is regional",
+      "topic": "grid-intensity",
+      "text": "A grid emission factor is the average carbon intensity of the electricity mix delivered on a network. It varies by region because generation fleets differ: coal-heavy systems emit several times more per unit than hydro or nuclear-rich ones. Intensity also shifts hour by hour as demand and renewable output change. That is why the same kilowatt-hour carries a different carbon weight in Jakarta than in Manchester."
+    },
+    {
+      "id": "cloud-carbon-watts-per-vcpu",
+      "source": "Cloud Carbon Footprint",
+      "section": "Cloud compute energy model",
+      "topic": "cloud-watts",
+      "text": "The Cloud Carbon Footprint methodology estimates server energy from the number of virtual CPUs a workload occupies. Each vCPU is assigned a minimum and maximum wattage, and the model interpolates between them using observed CPU utilisation. Power usage effectiveness then scales that server energy up to account for cooling and other facility overhead. The method is deliberately transparent so an estimate can be reproduced from published coefficients."
+    },
+    {
+      "id": "cloud-operational-vs-embodied",
+      "source": "Cloud Carbon Footprint",
+      "section": "Operational vs embodied emissions",
+      "topic": "cloud-embodied",
+      "text": "Cloud emissions split into operational and embodied parts. Operational emissions come from electricity consumed while servers run; embodied emissions are the carbon already spent manufacturing and disposing of the hardware. The methodology amortises embodied carbon across a server's expected lifetime and adds it to the operational total. Ignoring the embodied share understates the footprint of long-lived infrastructure."
+    },
+    {
+      "id": "cloud-small-carbon-large-spend",
+      "source": "Cloud Carbon Footprint",
+      "section": "Cloud — small carbon, large spend",
+      "topic": "cloud-spend",
+      "text": "A single vCPU-hour is a tiny amount of carbon, often a fraction of a gram of CO2e, because a server is shared across many workloads. Yet cloud can be a large share of a technology company's spend, so finance treats it as a headline cost centre. The disproportionate attention comes from cost, not from carbon mass. Retiring idle instances usually cuts both, which is why the two lenses are quoted together."
+    },
+    {
+      "id": "epa-supply-chain-factors",
+      "source": "US EPA",
+      "section": "EPA supply-chain factors",
+      "topic": "epa-factors",
+      "text": "The US Environmental Protection Agency publishes supply-chain emission factors for spend-based estimation. These build on the USEEIO model, which links industry sectors to their average carbon and other environmental impacts. A purchaser maps each spend category to the closest sector and multiplies. Because sectors are broad, the resulting figure is a screening estimate rather than a supplier measurement."
+    },
+    {
+      "id": "factor-uncertainty-to-confidence",
+      "source": "GHG Protocol Corporate Standard",
+      "section": "Factor uncertainty to confidence",
+      "topic": "uncertainty",
+      "text": "Every emission factor carries an uncertainty percentage that describes how far its true value may sit from the published point estimate. Propagating that uncertainty through a calculation turns activity-level error bars into a confidence score for the resulting figure. A factor with a small uncertainty yields a tighter, more trustworthy estimate. Confidence should be reported alongside the number, never hidden behind it."
+    },
+    {
+      "id": "robust-z-score-spike-detection",
+      "source": "GHG Protocol Corporate Standard",
+      "section": "Robust spike detection",
+      "topic": "robust-statistics",
+      "text": "A robust z-score measures how far a value sits from the median using the median absolute deviation (MAD) as its scale. The mean and standard deviation are the wrong tool for finding a spike, because the outlier being tested inflates the standard deviation and can mask itself. The median and MAD barely move when a single extreme point is added. This is why an anomaly detector for emission series prefers the robust statistic over its classical cousin."
+    },
+    {
+      "id": "limits-of-linear-extrapolation",
+      "source": "IEA",
+      "section": "Limits of linear extrapolation",
+      "topic": "extrapolation",
+      "text": "Linear extrapolation projects a trend forward by holding its recent rate constant. It assumes no rebound effect, in which efficiency gains are partly taken back as extra consumption. It assumes no learning curve that would make a technology cheaper and its deployment steeper over time. Emission factors themselves are held fixed, even though grid intensity drifts year on year, so a linear path is a scenario rather than a forecast."
+    },
+    {
+      "id": "traceability-principle",
+      "source": "GHG Protocol Corporate Standard",
+      "section": "Traceability principle",
+      "topic": "traceability",
+      "text": "Traceability means that every reported number can be followed back to its inputs. In practice each figure equals an activity value multiplied by a cited emission factor, with both recorded. If either the activity or the factor cannot be produced on request, the number is not auditable. This discipline is what separates a measured inventory from a plausible guess."
+    },
+    {
+      "id": "rebound-effect",
+      "source": "IEA",
+      "section": "Rebound effect",
+      "topic": "rebound",
+      "text": "The rebound effect describes efficiency improvements that are partly cancelled by increased use. A cheaper, cleaner unit of compute may lead teams to run more of it, so total emissions fall by less than the per-unit saving suggests. Rebound is a known limitation of any simple linear model. Analysts often present a range that brackets the rebound assumption."
+    },
+    {
+      "id": "data-quality-hierarchy",
+      "source": "GHG Protocol Corporate Standard",
+      "section": "Data quality hierarchy",
+      "topic": "data-quality",
+      "text": "Emission data quality runs from measured, supplier-specific values at the top down to sector averages at the bottom. A supplier who reports its own generation mix gives a more trustworthy figure than a spend-based proxy. Inventories should state where on this hierarchy each line sits. The ranking guides both the confidence score and where to invest in better data."
+    },
+    {
+      "id": "factor-vintage",
+      "source": "UK Government GHG Conversion Factors (DEFRA)",
+      "section": "Factor versioning",
+      "topic": "factor-vintage",
+      "text": "Emission factors are published in annual editions because grids and processes change. A factor's publication year, or vintage, is part of its identity. Mixing factors from different years inside one calculation introduces inconsistency that is hard to see. Best practice is to pick one edition and apply it everywhere in a reporting period."
+    },
+    {
+      "id": "power-usage-effectiveness",
+      "source": "Cloud Carbon Footprint",
+      "section": "Power usage effectiveness",
+      "topic": "pue",
+      "text": "Power usage effectiveness is the ratio of a data centre's total power draw to the power delivered to its computing equipment. A PUE of 1.2 means that for every 100 watts of servers, roughly 120 watts enter the building. The extra overhead covers cooling, power distribution losses and lighting. Hyperscale operators often achieve a lower PUE than smaller facilities."
+    }
+  ]
+}

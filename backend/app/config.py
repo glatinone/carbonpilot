@@ -8,6 +8,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -28,6 +29,15 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     google_api_key: str = ""
     gemini_model: str = "gemini-2.5-flash"
+
+    # Refuse to boot when the LLM path must be live (e.g. a demo where the
+    # offline fallback would only be discovered on stage). The field name alone
+    # maps to REQUIRE_LLM; the alias accepts the documented CARBONPILOT_ name
+    # too, case-insensitively.
+    require_llm: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("CARBONPILOT_REQUIRE_LLM", "require_llm"),
+    )
 
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
 

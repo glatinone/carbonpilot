@@ -1,7 +1,7 @@
 """CarbonPilot API — application entry point.
 
-Run:  python -m uvicorn app.main:app --reload --port 8000
-Docs: http://localhost:8000/docs
+Run:  python -m uvicorn app.main:app --reload --port 8008
+Docs: http://localhost:8008/docs
 """
 
 from __future__ import annotations
@@ -17,6 +17,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select
 
 from app import __version__
+from app.agent import gemini_agent
 from app.config import get_settings
 from app.db import SessionLocal, init_db
 from app.routers import actions, agent, dashboard, ingest, scenarios
@@ -30,6 +31,16 @@ UI_DIR = Path(_UI_ENV).resolve() if _UI_ENV else Path(__file__).resolve().parent
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    settings = get_settings()
+    # Fail fast when the operator has asked for a live LLM. Silently degrading to
+    # the deterministic offline router is the wrong thing to discover on stage,
+    # so refuse to boot rather than serve offline answers to judges.
+    if settings.require_llm and not settings.llm_enabled:
+        raise RuntimeError(
+            "CARBONPILOT_REQUIRE_LLM is set but no LLM key is configured. "
+            "Set GEMINI_API_KEY in backend/.env (see backend/.env.example), or "
+            "unset CARBONPILOT_REQUIRE_LLM to allow the offline router."
+        )
     init_db()
     with SessionLocal() as db:
         from app.models import Company
@@ -75,6 +86,8 @@ def health() -> dict:
         "version": __version__,
         "llm_enabled": settings.llm_enabled,
         "llm_model": settings.gemini_model if settings.llm_enabled else None,
+        "llm_mode": "gemini" if settings.llm_enabled else "offline",
+        "llm_model_resolved": gemini_agent.resolved_model(),
         "database": settings.database_url.split("://", 1)[0],
         "ui_served": UI_DIR.exists(),
     }

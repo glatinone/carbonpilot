@@ -127,9 +127,25 @@ def run_scenario(
     interventions: list[dict],
     label: str | None = None,
 ) -> dict:
-    base = baseline(db, company_id)
-    annual = _annual_by_type(db, company_id)
+    """Simulate interventions against a freshly read baseline."""
+    return _scenario_from(
+        baseline(db, company_id), _annual_by_type(db, company_id), interventions, label
+    )
 
+
+def _scenario_from(
+    base: dict,
+    annual: dict,
+    interventions: list[dict],
+    label: str | None = None,
+) -> dict:
+    """Pure scenario maths over an already-read baseline.
+
+    Neither ``base`` nor ``annual`` depends on the interventions, so the caller
+    reads them once. The constraint search evaluates thousands of combinations
+    and would otherwise re-aggregate the entire activity history for every one
+    of them — the difference between a snappy demo and 30 seconds of dead air.
+    """
     per_intervention = []
     total_tco2e_cut = 0.0
     total_cost_delta = 0.0
@@ -244,11 +260,17 @@ def find_feasible(
 
     evaluated: list[dict] = []
     types = sorted(by_type)
+
+    # Read once: neither the baseline nor the per-type annuals depend on which
+    # combination is being evaluated, and this loop runs thousands of times.
+    base = baseline(db, company_id)
+    annual = _annual_by_type(db, company_id)
+
     for size in range(1, min(max_interventions, len(types)) + 1):
         for combo_types in combinations(types, size):
             for variants in _variant_product([by_type[t] for t in combo_types]):
-                result = run_scenario(
-                    db, company_id, [v.to_dict() for v in variants], label=_label(variants)
+                result = _scenario_from(
+                    base, annual, [v.to_dict() for v in variants], label=_label(variants)
                 )
                 impact = result["impact"]
                 feasible = (

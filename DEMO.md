@@ -99,15 +99,28 @@ Click **Create Action**, assign the owner.
 
 ## Rehearsal checklist
 
-- [ ] `python -m app.seed --seed-db` run right before presenting (resets actions and scenario history)
-- [ ] Backend reachable: open http://localhost:8008/api/health and confirm `"status":"ok"`
-- [ ] If it says `"llm_enabled": false`, either add the key or acknowledge the deterministic mode —
-      do not let a judge discover it on screen
+Run the preflight first — it exercises every route behind the four pages, the constraint search
+and one real agent question, and fails on anything that would break on stage:
+
+```bash
+cd backend && ./.venv/Scripts/python.exe scripts/preflight.py --reset
+```
+
+`--reset` re-seeds the synthetic dataset (clearing actions and scenario history) before checking,
+so one command both resets and verifies. It prints `READY` and exits 0, or names the failing
+check. Fix anything it reports, then work through the rest by hand:
+
+- [ ] Backend reachable on http://localhost:8008/api/health with `"llm_mode": "gemini"`.
+      If it says `offline`, the UI will label answers `Deterministic engine` — add the key or
+      acknowledge the deterministic mode out loud; do not let a judge discover it on screen.
 - [ ] Frontend loaded at http://localhost:3000, and the Ask panel already answered once (proves
       the round trip works before you're on stage)
 - [ ] Simulator sliders reset to 0
 - [ ] Action Plan cleared of stale actions from rehearsal
 - [ ] One backup screenshot of each of the four pages, in case the network drops
+
+`next start` is not a supported way to serve the UI here (see backend/README.md) — use
+`npm run dev` against the API, or the single-port static export.
 
 ## Numbers to have ready if a judge pushes
 

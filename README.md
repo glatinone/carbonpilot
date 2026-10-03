@@ -121,7 +121,7 @@ coherent 12-month history for a fictional Indonesian digital-services group
 **Two anomalies are planted on purpose**, so the AI has something real to find:
 
 - **May 2026 — cloud compute +165%**, driven by a weekend workload
-  (`weekend_share` 0.15 → 0.62, i.e. ~4× the baseline). This is the demo hero.
+  (`weekend_share` 0.15 → 0.60, i.e. ~4× the baseline). This is the demo hero.
 - **September 2026 — diesel +58%**, a distribution surge.
 
 Cloud being a small slice of *carbon* while a large slice of *cost* is realistic (Cloud Carbon
@@ -139,13 +139,14 @@ the product is the decision, not the size of one bar.
 | `POST` | `/api/scenarios/constraints` | *"reduce X% without increasing cost"* search |
 | `GET`/`POST` | `/api/recommendations` | ranked actions |
 | `GET`/`POST`/`PATCH` | `/api/actions` | owned, tracked action items |
+| `GET` | `/api/actions/export` | the tracked plan as a Markdown or CSV document |
 | `POST` | `/api/chat` | Gemini tool-calling agent (with tool-call trace) |
 | `POST` | `/api/ingest/preview`, `/api/ingest` | CSV upload: mapping preview then calculation |
 
 ## Tests
 
 ```bash
-cd backend && .venv/Scripts/python -m pytest -q      # 28 engine tests
+cd backend && .venv/Scripts/python.exe -m pytest -q      # 72 tests
 cd frontend && npm run typecheck
 ```
 

@@ -29,6 +29,15 @@ from pathlib import Path
 # The question the demo script actually asks in front of an audience.
 CANONICAL_QUESTION = "Why did our emissions increase in May 2026?"
 
+# Two rows, two different activity types, one shared coarse `category`. This is
+# the shape the demo's own electricity.csv uses, and it is the shape that hid a
+# mapping bug: natural gas must not collapse into grid electricity.
+SAMPLE_CSV = (
+    "date,category,activity,value,unit,cost\n"
+    "2026-01-01,electricity,electricity_kwh,1000,kWh,100\n"
+    "2026-01-01,electricity,natural_gas_kwh,500,kWh,50\n"
+)
+
 # A constraint search slower than this is dead air the audience will feel.
 SLOW_SEARCH_SECONDS = 5.0
 
@@ -54,6 +63,24 @@ def _post(base: str, path: str, payload: dict, timeout: float = 300.0):
         f"{base}{path}",
         data=json.dumps(payload).encode(),
         headers={"Content-Type": "application/json"},
+    )
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        return response.status, json.load(response)
+
+
+def _post_multipart(base: str, path: str, filename: str, content: str, timeout: float = 60.0):
+    """POST a small CSV the way the upload screen does — as a real multipart body."""
+    boundary = "----carbonpilot-preflight"
+    body = (
+        f"--{boundary}\r\n"
+        f'Content-Disposition: form-data; name="file"; filename="{filename}"\r\n'
+        f"Content-Type: text/csv\r\n\r\n{content}\r\n"
+        f"--{boundary}--\r\n"
+    ).encode()
+    request = urllib.request.Request(
+        f"{base}{path}",
+        data=body,
+        headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
     )
     with urllib.request.urlopen(request, timeout=timeout) as response:
         return response.status, json.load(response)
@@ -158,6 +185,20 @@ def build_checks(base: str) -> list[Result]:
             return Result("constraint search", WARN, f"{detail} — that is visible dead air on stage")
         return Result("constraint search", OK, detail)
 
+    def upload() -> Result:
+        _, data = _post_multipart(base, "/api/ingest/preview", "preflight.csv", SAMPLE_CSV)
+        types = sorted({m["activity_type"] for m in data.get("suggested", [])})
+        if not types:
+            return Result("upload / mapping", FAIL, "nothing was mapped — the upload screen shows an empty table")
+        if len(types) < 2:
+            return Result(
+                "upload / mapping",
+                FAIL,
+                f"distinct streams collapsed into {types} — check the name-column preference "
+                "and the keyword specificity tiebreak",
+            )
+        return Result("upload / mapping", OK, f"preview maps {len(types)} activity types: {types}")
+
     def agent() -> Result:
         started = time.time()
         _, data = _post(base, "/api/chat", {"message": CANONICAL_QUESTION, "company_id": 1})
@@ -192,6 +233,7 @@ def build_checks(base: str) -> list[Result]:
         lambda: non_empty("recommendations", "/api/recommendations", "recommendations"),
     )
     _check(results, "action plan", actions)
+    _check(results, "upload / mapping", upload)
     _check(results, "constraint search", constraint_search)
     _check(results, "agent (Ask panel)", agent)
     return results

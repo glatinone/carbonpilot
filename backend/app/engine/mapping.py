@@ -161,15 +161,20 @@ def infer_activity_type(column: str, unit: str | None = None) -> MappingResult:
     norm = _normalise(column)
     norm_unit = _normalise(unit) if unit else ""
 
-    best: tuple[float, str] | None = None
+    # Ranked by (score, specificity). Specificity is the length of the matched
+    # keyword: a longer keyword explains more of the input, so it is the more
+    # precise reading. Without it, ties fall to dict insertion order and the
+    # generic "kwh" keyword under electricity outranks "natural_gas" — reading
+    # natural gas as grid electricity, wrong scope and ~4x the emission factor.
+    best: tuple[float, int, str] | None = None
     runner_up: str | None = None
 
     for activity_type, spec in CANONICAL.items():
         for keyword in spec["keywords"]:
             if norm == keyword:
-                score = 1.0
+                score, specificity = 1.0, len(keyword)
             elif keyword in norm or norm in keyword:
-                score = 0.78
+                score, specificity = 0.78, len(keyword)
             else:
                 continue
 
@@ -181,9 +186,9 @@ def infer_activity_type(column: str, unit: str | None = None) -> MappingResult:
                 elif resolved in {"kwh", "mwh"} and canonical_unit == "kwh":
                     score += 0.08
 
-            if best is None or score > best[0]:
-                runner_up = best[1] if best else None
-                best = (score, activity_type)
+            if best is None or (score, specificity) > (best[0], best[1]):
+                runner_up = best[2] if best else None
+                best = (score, specificity, activity_type)
             elif runner_up is None:
                 runner_up = activity_type
 
@@ -202,7 +207,7 @@ def infer_activity_type(column: str, unit: str | None = None) -> MappingResult:
             ),
         )
 
-    score, activity_type = best
+    score, _, activity_type = best
     spec = CANONICAL[activity_type]
     confidence = min(score, 0.99)
 

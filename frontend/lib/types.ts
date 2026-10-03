@@ -130,3 +130,31 @@ export type ActionItem = {
   expected_cost_usd: number;
   status: string;
 };
+
+export type ColumnMapping = {
+  column: string;
+  activity_type: string;
+  category: string;
+  unit: string;
+  scope: number;
+  confidence: number;
+  rationale: string;
+  alternatives: string[];
+};
+
+export type MappingPreview = {
+  filename: string;
+  shape: "long" | "wide";
+  columns: string[];
+  suggested: ColumnMapping[];
+  sample_rows: Array<Record<string, string>>;
+  ambiguous: string[];
+};
+
+export type IngestResult = {
+  shape: string;
+  activities_created: number;
+  rows_skipped: number;
+  skipped: Array<Record<string, unknown>>;
+  mapping: Record<string, string>;
+};

@@ -26,6 +26,20 @@ VALUE_HEADERS = {"value", "amount", "usage", "quantity", "consumption", "total",
 COST_HEADERS = {"cost", "spend", "price", "amount_usd", "biaya", "total_cost"}
 UNIT_HEADERS = {"unit", "uom", "satuan"}
 NAME_HEADERS = {"activity", "activity_type", "item", "metric", "type", "category", "kategori", "jenis"}
+# Most specific first. A file carrying both a coarse `category` (the stream) and a
+# precise `activity` (the canonical type) must be read on the precise column, or
+# distinct streams collapse into whatever the coarse column happens to name —
+# which is how natural gas was being imported as grid electricity.
+NAME_HEADER_PRIORITY = (
+    "activity_type",
+    "activity",
+    "metric",
+    "item",
+    "type",
+    "category",
+    "kategori",
+    "jenis",
+)
 IGNORE_HEADERS = {"notes", "note", "comment", "remarks", "description", "id", "source"}
 
 
@@ -57,6 +71,15 @@ def _pick(headers: list[str], candidates: set[str]) -> str | None:
     return None
 
 
+def _pick_name_header(headers: list[str]) -> str | None:
+    """The name column to map on: the most specific present, not the leftmost."""
+    normalized = {_norm(header): header for header in headers}
+    for candidate in NAME_HEADER_PRIORITY:
+        if candidate in normalized:
+            return normalized[candidate]
+    return None
+
+
 def _preview(text: str, filename: str) -> dict:
     headers, rows = _parse_csv(text)
     if not rows:
@@ -68,7 +91,7 @@ def _preview(text: str, filename: str) -> dict:
     ambiguous: list[str] = []
 
     if shape == "long":
-        name_col = _pick(headers, NAME_HEADERS)
+        name_col = _pick_name_header(headers)
         for value in {row.get(name_col, "") for row in rows}:
             if not value:
                 continue
@@ -99,7 +122,7 @@ def _preview(text: str, filename: str) -> dict:
 def _rows_from_long(headers: list[str], rows: list[dict], column_map: dict[str, str]) -> list[dict]:
     date_col = _pick(headers, DATE_HEADERS)
     value_col = _pick(headers, VALUE_HEADERS)
-    name_col = _pick(headers, NAME_HEADERS)
+    name_col = _pick_name_header(headers)
     cost_col = _pick(headers, COST_HEADERS)
     unit_col = _pick(headers, UNIT_HEADERS)
 

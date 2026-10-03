@@ -26,12 +26,26 @@ cd backend && .venv/Scripts/python -m app.seed --seed-db
 Point at the hero number: **11,208 tCO₂e/year** across 168 activity records, 12 months, Scope 1/2/3
 split.
 
-## 0:45–1:10 — Upload (only if you have the slide ready)
+## 0:45–1:10 — Upload
+
+Go to **Upload data** (left nav).
 
 > "Input is whatever the company already has — CSV exports from electricity, cloud billing,
 > travel and fuel."
 
-Click **Analyze** on the Ask panel with:
+Drop `backend/demo_data/electricity.csv` on the page. The mapping preview runs *before* anything
+is calculated:
+
+> "It read the file and resolved each stream first: purchased electricity as Scope 2, natural gas
+> as Scope 1 — different scopes, different emission factors."
+
+Point at the mapping table (both rows, with their confidence) and the first rows.
+
+**Do not click Import during the 3-minute run.** The demo dataset is already loaded, so importing
+this file again would add 24 duplicate rows and move the hero number off 11,208 mid-presentation.
+If you want to show the import, do it last, then re-run `preflight.py --reset`.
+
+Then go to the **Dashboard** and use the **Ask panel** with:
 
 > *"Where are our biggest emissions?"*
 
@@ -45,12 +59,12 @@ Point at the **tool-call trace** under the answer:
 
 Go to **AI Insights**.
 
-> "CarbonPilot found three signals. The big one: cloud compute rose 165% in May."
+> "CarbonPilot found four signals. The big one: cloud compute rose 165% in May."
 
 Expand it.
 
-> **Why?** → *"The weekend share of cloud usage rose from 15% to 62% — four times the previous
-> baseline."*
+> **Why?** → *"The weekend share of cloud usage rose from 15% to 60% — about four times the
+> previous baseline."*
 
 > "That is an AI agent chaining statistical detection, period comparison and driver attribution —
 > not a chatbot summarising a chart."
@@ -59,7 +73,7 @@ Expand it.
 
 Go to **Simulator**. Drag **Right-size weekend cloud workloads** to 30%.
 
-> "Estimated impact: **−57 tCO₂e/year** and roughly **−$3.0M/year** in cloud spend, effort medium."
+> "Estimated impact: **−66 tCO₂e/year** and roughly **−$3.5M/year** in cloud spend, effort medium."
 
 Then use **Constraint search**:
 
@@ -99,7 +113,7 @@ Click **Create Action**, assign the owner.
 
 ## Rehearsal checklist
 
-Run the preflight first — it exercises every route behind the four pages, the constraint search
+Run the preflight first — it exercises every route behind the five pages, the constraint search
 and one real agent question, and fails on anything that would break on stage:
 
 ```bash
@@ -117,7 +131,7 @@ check. Fix anything it reports, then work through the rest by hand:
       the round trip works before you're on stage)
 - [ ] Simulator sliders reset to 0
 - [ ] Action Plan cleared of stale actions from rehearsal
-- [ ] One backup screenshot of each of the four pages, in case the network drops
+- [ ] One backup screenshot of each of the five pages, in case the network drops
 
 `next start` is not a supported way to serve the UI here (see backend/README.md) — use
 `npm run dev` against the API, or the single-port static export.
@@ -128,6 +142,6 @@ check. Fix anything it reports, then work through the rest by hand:
 |---|---|
 | "Is the LLM hallucinating these?" | No — every figure comes from a tool call shown on screen. The model's job is tool selection and explanation. |
 | "How accurate are the factors?" | Curated point estimates with published sources and an uncertainty band per factor; production would use Climatiq or the issuing authority's live factors. |
-| "Why is cloud only ~2% of emissions?" | Because per-vCPU-hour intensities genuinely are small (Cloud Carbon Footprint). It's 29% of *spend* though — which is why the decision layer, not the accounting layer, is the product. |
+| "Why is cloud only ~2% of emissions?" | Because per-vCPU-hour intensities genuinely are small (Cloud Carbon Footprint). It's about a third of *spend* though (33%) — which is why the decision layer, not the accounting layer, is the product. |
 | "What's fake here?" | The company and its activity data are synthetic. The methodology, the emission factors, the statistics and the engines are real. |
-| "Can it read our real data?" | Yes — CSV upload, long or wide format, with a semantic mapping preview before anything is calculated. |
+| "Can it read our real data?" | Yes — CSV upload, long or wide format, with a semantic mapping preview before anything is calculated. Every import is scored by scope: in the demo file, purchased electricity lands in Scope 2 and natural gas in Scope 1. |

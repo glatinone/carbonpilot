@@ -3,7 +3,9 @@ import type {
   ChatResponse,
   ConstraintSearch,
   Dashboard,
+  IngestResult,
   Intervention,
+  MappingPreview,
   Recommendation,
   ScenarioResult,
 } from "./types";
@@ -41,8 +43,41 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T;
 }
 
+/**
+ * Multipart upload. Deliberately sets no Content-Type: the browser has to set
+ * it itself so the multipart boundary matches the encoded body.
+ */
+async function upload<T>(path: string, file: File, fields: Record<string, string> = {}): Promise<T> {
+  const body = new FormData();
+  body.append("file", file);
+  for (const [key, value] of Object.entries(fields)) body.append(key, value);
+
+  const response = await fetch(`${API_URL}${path}`, { method: "POST", body, cache: "no-store" });
+  if (!response.ok) {
+    let detail = response.statusText;
+    try {
+      const parsed = await response.json();
+      detail = parsed?.detail ?? detail;
+    } catch {
+      /* keep statusText */
+    }
+    throw new ApiError(`${response.status} ${detail}`, response.status);
+  }
+  return (await response.json()) as T;
+}
+
 export const api = {
   health: () => request<{ status: string; llm_enabled: boolean; llm_model: string | null }>("/api/health"),
+
+  // Ingestion is a two-step round trip on purpose: map first so the operator
+  // sees how each column was read, then import.
+  ingestPreview: (file: File) => upload<MappingPreview>("/api/ingest/preview", file),
+
+  ingest: (file: File, columnMap: Record<string, string> = {}, companyId = 1) =>
+    upload<IngestResult>("/api/ingest", file, {
+      company_id: String(companyId),
+      column_map: JSON.stringify(columnMap),
+    }),
 
   dashboard: (companyId = 1) => request<Dashboard>(`/api/dashboard?company_id=${companyId}`),
 

@@ -83,6 +83,11 @@ export const api = {
       actions: ActionItem[];
     }>(`/api/actions?company_id=${companyId}`),
 
+  // A browser download, not a JSON round trip: the response carries
+  // Content-Disposition, so an anchor can point straight at it.
+  exportActionsUrl: (fmt: "md" | "csv" = "md", companyId = 1) =>
+    `${API_URL}/api/actions/export?fmt=${fmt}&company_id=${companyId}`,
+
   createAction: (recommendationId: number, owner: string, companyId = 1) =>
     request<ActionItem>(`/api/actions?company_id=${companyId}`, {
       method: "POST",

@@ -117,14 +117,34 @@ export default function ActionsPage() {
               <h2 className="text-sm font-semibold text-white">
                 Action plan ({actions.length})
               </h2>
-              {totals && actions.length > 0 && (
-                <span className="metric text-[11px] text-slate-400">
-                  if all executed: −{totals.expected_carbon_t.toLocaleString("en-US", {
-                    maximumFractionDigits: 0,
-                  })}{" "}
-                  tCO₂e · {formatUsd(totals.expected_cost_usd)}/yr
-                </span>
-              )}
+              <div className="flex flex-wrap items-center gap-3">
+                {totals && actions.length > 0 && (
+                  <span className="metric text-[11px] text-slate-400">
+                    if all executed: −{totals.expected_carbon_t.toLocaleString("en-US", {
+                      maximumFractionDigits: 0,
+                    })}{" "}
+                    tCO₂e · {formatUsd(totals.expected_cost_usd)}/yr
+                  </span>
+                )}
+                {actions.length > 0 && (
+                  <>
+                    <a
+                      className="btn-ghost px-3 py-1.5 text-xs"
+                      href={api.exportActionsUrl("md")}
+                      title="Download this plan with its expected impact and assumptions"
+                    >
+                      Download .md
+                    </a>
+                    <a
+                      className="btn-ghost px-3 py-1.5 text-xs"
+                      href={api.exportActionsUrl("csv")}
+                      title="Download this plan as a spreadsheet"
+                    >
+                      Download .csv
+                    </a>
+                  </>
+                )}
+              </div>
             </div>
 
             {actions.length === 0 ? (

@@ -5,12 +5,15 @@
 > Companies can already measure their carbon footprint. CarbonPilot answers the
 > next question: **what should we do about it?**
 
-`Measure → Diagnose → Simulate → Act`
+`Measure → Diagnose → Simulate → Act` · *and compare your grid against the region*
 
 ```
 backend/    FastAPI + SQLAlchemy — deterministic engines + Gemini tool-calling agent
-frontend/   Next.js + Tailwind + Recharts — dashboard, insights, simulator, action plan
+frontend/   Next.js + Tailwind + Recharts — six screens, English/Indonesian, static export
 ```
+
+> [`DEMO.md`](DEMO.md) — the 3-minute demo script · [`DEPLOY.md`](DEPLOY.md) — deployment
+> topology and its risks · [`DESIGN.md`](DESIGN.md) — the design system the UI is built from
 
 ---
 
@@ -72,6 +75,40 @@ orchestrates it.
    over the intervention catalogue.
 4. **Recommendation** — reports what, why, how much, the assumption, and the next action.
 
+## Grid benchmarks — where the answer depends on location
+
+`/japac` prices the company's **measured** electricity against every grid in the region, from the
+Ember Yearly Electricity Data (20 grids, CC BY 4.0), each row carrying its own data year and
+generation mix so the intensity has an explanation attached.
+
+The demo company draws 4,304,333 kWh. On Indonesia's grid that is 3,036 tCO₂e — **rank 19 of 20**,
+coal 69%. The same consumption on New Zealand's grid would be 399 tCO₂e. The difference is
+location, not effort, and that turns *"how much do we emit"* into *"where does this change"*.
+
+**Boundary discipline, because it matters here.** Ember publishes *full-lifecycle* CO₂e intensity;
+the inventory's Scope 2 figure uses a *generation-boundary* curated factor. The two are not
+interchangeable, so the benchmark ships as its own document and is never merged into the factor
+library — and `measured.tco2e` is computed from the stored inventory calculation, never from
+Ember. The visible consequence: the same grid reads **705.3** in the benchmark and **712** in the
+inventory, and both are labelled rather than quietly averaged. `preflight` fails if the payload
+ever loses its basis.
+
+## Two languages, no added dependency
+
+English and Indonesian, switched from the sidebar. The app is a static export, so there is no
+server to route by locale and a client provider is the only architecture that fits — which also
+means no new package in the build. Dictionaries are flat key maps with resolution order
+*locale → English → the key*, so an incomplete translation degrades to a readable language rather
+than showing a raw identifier.
+
+Long sentences are stored whole as templates with `{placeholders}`, and the emphasis is applied
+when substituting — because word order differs per language, and concatenating translated
+fragments cannot survive that.
+
+UI chrome is fully bilingual. Text the **engine and model** generate — recommendation titles, the
+constraint-search message, the agent's answers — stays English; translating those is a backend
+change, not a UI one. Stated here rather than hidden.
+
 ## Quick start
 
 Two terminals.
@@ -115,7 +152,7 @@ coherent 12-month history for a fictional Indonesian digital-services group
 | Electricity + gas | ~3,200 t | Scope 2, Indonesian grid factor 0.712 kgCO₂e/kWh |
 | Fleet | ~1,100 t | Scope 1 diesel + petrol |
 | Business travel | ~1,000 t | flights, hotels, rail |
-| Cloud | ~270 t | small share of carbon, ~29% of tracked spend |
+| Cloud | ~270 t | small share of carbon (2.4%), ~33% of tracked spend |
 | Waste + water | ~140 t | Scope 3 |
 
 **Two anomalies are planted on purpose**, so the AI has something real to find:
@@ -141,12 +178,13 @@ the product is the decision, not the size of one bar.
 | `GET`/`POST`/`PATCH` | `/api/actions` | owned, tracked action items |
 | `GET` | `/api/actions/export` | the tracked plan as a Markdown or CSV document |
 | `POST` | `/api/chat` | Gemini tool-calling agent (with tool-call trace) |
+| `GET` | `/api/japac` | measured electricity priced against 20 JAPAC grids, with basis and licence |
 | `POST` | `/api/ingest/preview`, `/api/ingest` | CSV upload: mapping preview then calculation |
 
 ## Tests
 
 ```bash
-cd backend && .venv/Scripts/python.exe -m pytest -q      # 92 tests
+cd backend && .venv/Scripts/python.exe -m pytest -q      # 101 tests
 cd frontend && npm run typecheck
 ```
 

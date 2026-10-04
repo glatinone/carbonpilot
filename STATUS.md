@@ -102,11 +102,14 @@ Grid benchmark home      Indonesia 705.3 gCO2e/kWh, rank 19/20
 
 ## Open items
 
-**Needs the owner's tap**
+**Decided — one URL, do not reopen**
+- **The public address is final:** `https://rakazo-civo.tail1b51ed.ts.net:8443`, behind a
+  Tailscale Funnel. A tidier `<ip>.sslip.io` hostname was built, verified working from
+  outside, then **removed**: office DNS sinkholes `sslip.io`, so the name is unreachable
+  from the owner's own machine even though it resolves elsewhere. A second address that
+  breaks exactly where the demo happens is worse than none, so there is deliberately
+  only one.
 - Publish the repository when submitting (`gh repo edit glatinone/carbonpilot --visibility public`).
-- *Optional:* a tidier URL via a reverse proxy (e.g. Caddy on `<ip>.sslip.io`). Costs
-  opening 80/443 publicly on the host — a security-posture change, so it waits for a
-  decision. The existing URL is fully functional.
 
 **Known gaps, no blocker**
 - No repeatable deploy script. Deployment is currently a manual copy of changed files

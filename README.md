@@ -7,7 +7,7 @@
 
 `Measure → Diagnose → Simulate → Act` · *and compare your grid against the region*
 
-**Live demo:** <https://carbonpilot.212-2-251-42.sslip.io> — the UI and the API on one
+**Live demo:** <https://rakazo-civo.tail1b51ed.ts.net:8443> — the UI and the API on one
 origin (FastAPI serves both), so there is no second deployment and no CORS to configure.
 
 ```

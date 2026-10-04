@@ -7,35 +7,40 @@ with no data behind it.
 ## LIVE NOW
 
 ```
-https://carbonpilot.212-2-251-42.sslip.io
+https://rakazo-civo.tail1b51ed.ts.net:8443
 ```
 
-One origin serves the UI **and** the API: real Let's Encrypt certificate, no cold
-start, no CORS to configure, nothing to keep awake. The judge opens this one link.
+One origin serves the UI **and** the API: real TLS, no cold start, no CORS to
+configure, nothing to keep awake. **This is the only public address** — there is no
+second URL to remember.
 
 ```
-Internet ──▶ Caddy                     212.2.251.42  host a0-research  (192.168.1.2)
-             TLS-ALPN-01, Let's Encrypt
-             carbonpilot.212-2-251-42.sslip.io
-                     │
-                     ▼  reverse_proxy 192.168.1.4:8010   (internal network)
-             CarbonPilot                   212.2.250.84  host a0-content  (192.168.1.4)
-             systemd unit `carbonpilot`
+Internet ──▶ Tailscale Funnel        outbound tunnel from the app host
+                    │
+                    ▼  https → http://127.0.0.1:8010
+             CarbonPilot              systemd unit `carbonpilot`
              uvicorn app.main:app --host 0.0.0.0 --port 8010
              serves /api/*  AND  frontend/out/  (ui_served: true)
              SQLite at backend/carbonpilot.db
 ```
 
-`sslip.io` is why there is no domain to buy: `<anything>.<ip-with-dashes>.sslip.io`
-resolves to that IP automatically, so Caddy can obtain a real certificate for a
-name nobody registered.
+**Why a tunnel and not a published port.** This host's firewall allows only SSH in;
+everything else is restricted to the private network. The tunnel opens no inbound
+port, so the host's UFW policy and the other services on that network stay
+untouched. That constraint decided it — not convenience.
+
+A reverse-proxy hostname (`<ip>.sslip.io`) was set up, verified working from outside,
+and then **removed on purpose**: office DNS sinkholes `sslip.io` to an unrelated
+address, so that name is unreachable from the owner's own machine even though it
+resolves fine elsewhere. A second URL that fails exactly where the demo happens is
+worse than no second URL.
 
 ### Why this beats the Vercel plan
 
 The earlier plan split the UI (Vercel, HTTPS) from the API (a second host), which
 requires CORS, a second deployment, and `NEXT_PUBLIC_API_URL` baked at build time.
-Serving both from one origin deletes all three problems. **Vercel is now optional**
-and, for judging, redundant — see "Vercel, if you still want it" below.
+Serving both from one origin deletes all three problems. **Vercel is optional** and,
+for judging, redundant — see "Vercel, if you still want it" below.
 
 ### Reproducing it
 
@@ -51,21 +56,18 @@ cd ~/carbonpilot/backend && python3 -m venv .venv && ./.venv/bin/pip install -e 
 # 3. run it as a service, not a background shell — background processes over SSH
 #    die with the session, and `nohup ... &` still holds the SSH channel open
 #    /etc/systemd/system/carbonpilot.service  → ExecStart:
-#      <backend>/.venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8010
+#      <backend>/.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8010
 #      Environment=CARBONPILOT_UI_DIR=<repo>/frontend/out
 sudo systemctl enable --now carbonpilot
 
-# 4. proxy site block in Caddy on the host that owns public :443
-#    carbonpilot.212-2-251-42.sslip.io { tls { issuer acme { disable_http_challenge } }
-#                                        reverse_proxy 192.168.1.4:8010 }
-docker exec mybrain-mcp-caddy-1 caddy validate --config /etc/caddy/Caddyfile
-docker exec mybrain-mcp-caddy-1 caddy reload   --config /etc/caddy/Caddyfile
+# 4. expose it — one command, no firewall change, no reverse proxy
+sudo tailscale funnel --bg --https=8443 http://127.0.0.1:8010
+sudo tailscale funnel status     # expect: Funnel on, 8443 → 127.0.0.1:8010
 ```
 
-Bind to `0.0.0.0`, not `127.0.0.1`, because the proxy lives on a **different host**.
-Public exposure does not follow from binding — this provider's firewall drops every
-port except 22 and the one host that owns :443. A raw public port is not an option;
-the proxy is the only door.
+Bind the app to `127.0.0.1`: the tunnel runs on the same host and reaches it over
+the loopback, so nothing else needs access. Only widen to `0.0.0.0` if a proxy on a
+**different** machine must reach it.
 
 ## What the code actually is
 
@@ -122,8 +124,8 @@ Optional now, and redundant for judging. It buys a second public URL at the cost
 reintroducing CORS:
 
 ```
-NEXT_PUBLIC_API_URL = https://carbonpilot.212-2-251-42.sslip.io
-CORS_ORIGINS        = https://<your-vercel-app>.vercel.app   # on the VPS, then restart
+NEXT_PUBLIC_API_URL = https://rakazo-civo.tail1b51ed.ts.net:8443
+CORS_ORIGINS        = https://<your-vercel-app>.vercel.app   # on the app host, then restart
 ```
 
 Import the repository with **Root Directory** `frontend/`. `NEXT_PUBLIC_*` is baked

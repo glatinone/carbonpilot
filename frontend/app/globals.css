@@ -120,16 +120,35 @@ body {
   @apply bg-ink-faint;
 }
 
-/* Square, flat, no glow — a slider is a measuring instrument, not a toy. */
+/* Sliders.
+   The thumb used to be filled with `paper` while sitting on a `paper` page, so it
+   read as invisible — the only thing separating it from the background was a 1px
+   border on a 1px track. Now: a 2px track whose filled portion is ink, and a solid
+   ink thumb. The filled portion is driven by a `--fill` custom property that each
+   control sets inline from its own value, so how far you have dragged is legible
+   without reading the number. */
 input[type="range"] {
-  @apply h-px w-full cursor-pointer appearance-none bg-rule-strong;
+  @apply h-4 w-full cursor-pointer appearance-none bg-transparent;
+  background-image: linear-gradient(
+    to right,
+    #14150f 0,
+    #14150f var(--fill, 0%),
+    #c9c6ba var(--fill, 0%),
+    #c9c6ba 100%
+  );
+  background-size: 100% 2px;
+  background-position: 0 center;
+  background-repeat: no-repeat;
 }
 input[type="range"]::-webkit-slider-thumb {
-  @apply h-3.5 w-3.5 appearance-none rounded-none border border-ink bg-paper;
-}
-input[type="range"]:focus-visible::-webkit-slider-thumb {
-  @apply bg-ink;
+  @apply h-4 w-4 appearance-none rounded-none border-2 border-paper bg-ink;
 }
 input[type="range"]::-moz-range-thumb {
-  @apply h-3.5 w-3.5 rounded-none border border-ink bg-paper;
+  @apply h-4 w-4 appearance-none rounded-none border-2 border-paper bg-ink;
+}
+input[type="range"]:focus-visible {
+  @apply outline-none;
+}
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  @apply bg-alert;
 }

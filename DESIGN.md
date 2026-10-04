@@ -170,6 +170,10 @@ popover, should one be added, earns elevation with a rule and a `paper-panel` fi
 - Don't use Inter for a number, or mono for prose.
 - Don't centre body copy. Only genuinely empty states may centre; default to left.
 - Don't invent a metric for a mockup. If a number appears, it came from the API.
+- Don't fill a control with the page colour. A range thumb filled `paper` sitting on a `paper`
+  page is invisible — only a 1px border separated it from the background. Any control that carries
+  state must be legible against the surface it sits on, and must show its current value (the
+  slider track fills in `ink` up to its own position via `--fill`).
 - Don't keep a component alive with no consumer. A 7-colour category bar chart was deleted when a
   `.ledger` table replaced it, rather than left behind as dead code.
 

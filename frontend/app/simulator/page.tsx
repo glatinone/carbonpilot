@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import { api } from "@/lib/api";
 import type { ConstraintSearch, Intervention, ScenarioResult } from "@/lib/types";
 import { ErrorBanner, Footnote, SectionHead, Skeleton } from "@/components/ui";
@@ -159,6 +160,7 @@ export default function SimulatorPage() {
                       max={80}
                       step={5}
                       value={value}
+                      style={{ "--fill": `${(value / 80) * 100}%` } as CSSProperties}
                       onChange={(event) =>
                         setValues((previous) => ({
                           ...previous,
@@ -302,6 +304,7 @@ export default function SimulatorPage() {
                 min={1}
                 max={60}
                 value={targetPct}
+                style={{ "--fill": `${((targetPct - 1) / 59) * 100}%` } as CSSProperties}
                 onChange={(event) => setTargetPct(Number(event.target.value))}
                 className="w-48"
               />

@@ -41,6 +41,19 @@ class Settings(BaseSettings):
 
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
 
+    # Climatiq (optional, secret). When a key is set the agent can corroborate a
+    # curated factor against the live published one and cite it. The curated
+    # library stays the calculation source of truth, so a rehearsed demo cannot
+    # move because a third party changed a number.
+    climatiq_api_key: str = ""
+    climatiq_base_url: str = "https://api.climatiq.io"
+    climatiq_data_version: str = "^33"
+    climatiq_timeout_s: float = 8.0
+
+    @property
+    def climatiq_enabled(self) -> bool:
+        return bool(self.climatiq_api_key.strip())
+
     @property
     def llm_key(self) -> str:
         return (self.gemini_api_key or self.google_api_key).strip()

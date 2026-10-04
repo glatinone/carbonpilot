@@ -146,7 +146,7 @@ the product is the decision, not the size of one bar.
 ## Tests
 
 ```bash
-cd backend && .venv/Scripts/python.exe -m pytest -q      # 72 tests
+cd backend && .venv/Scripts/python.exe -m pytest -q      # 92 tests
 cd frontend && npm run typecheck
 ```
 
@@ -159,7 +159,10 @@ scenarios that satisfy the constraints.
 
 - Emission factors are curated point estimates for prototype use; production would pull live
   factors from Climatiq or the issuing authority. Each factor carries an `uncertainty_pct`, which
-  is propagated into the recommendation's **confidence** score rather than hidden.
+  is propagated into the recommendation's **confidence** score rather than hidden. A Climatiq
+  client ships (`app/engine/climatiq.py`, opt-in via `CLIMATIQ_API_KEY`) so the agent can
+  corroborate a factor against the live published one and cite it — deliberately off the
+  calculation path, so a rehearsed demo cannot move because a third party changed a number.
 - Scenario maths is linear (`baseline × reduction%`), with no rebound effect or learning curve.
   The UI labels every projection **Estimated impact** and lists its assumptions.
 - Scope 3 spend-based procurement is the crudest line in the model (60% uncertainty) — and it is

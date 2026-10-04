@@ -137,6 +137,48 @@ def tool_search_methodology(db: Session, company_id: int, query: str, k: int = 4
     }
 
 
+def tool_lookup_live_factor(
+    db: Session,
+    company_id: int,
+    query: str,
+    region: str | None = None,
+    value: float | None = None,
+    unit: str | None = None,
+) -> dict:
+    """Corroborate a curated emission factor against Climatiq's live library.
+
+    Opt-in on purpose: without a key this says so plainly rather than failing,
+    because the curated library is a legitimate source of truth for the demo —
+    not a degraded mode to apologise for.
+    """
+    from app.engine import climatiq
+
+    if not climatiq.is_enabled():
+        return {
+            "enabled": False,
+            "message": (
+                "No CLIMATIQ_API_KEY configured. The curated factor library "
+                "(search_emission_factors) remains the source of truth."
+            ),
+        }
+
+    try:
+        found = climatiq.search(query, region=region, limit=3)
+    except climatiq.ClimatiqError as exc:
+        return {"enabled": True, "error": str(exc)}
+
+    payload: dict = {"enabled": True, **found}
+    if value is not None and unit and found["results"]:
+        top = found["results"][0]
+        try:
+            payload["estimate"] = climatiq.estimate(
+                top["activity_id"], value, unit, region=region
+            )
+        except climatiq.ClimatiqError as exc:
+            payload["estimate_error"] = str(exc)
+    return payload
+
+
 def tool_list_recommendations(db: Session, company_id: int) -> dict:
     """Ranked decarbonisation actions (carbon x cost x effort), best first."""
     from app.engine.recommender import generate
@@ -349,6 +391,28 @@ TOOLS: dict[str, dict[str, Any]] = {
             "required": ["query"],
         },
     },
+    "lookup_live_factor": {
+        "fn": tool_lookup_live_factor,
+        "description": (
+            "Corroborate an emission factor against Climatiq's live published library, and optionally "
+            "estimate kgCO2e from activity data with it. Call this when asked whether the factors are "
+            "real, current, or sourced from a commercial provider. The curated factor library remains "
+            "the source of truth for this company's reported numbers."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "What to look up, e.g. 'grid electricity Indonesia'.",
+                },
+                "region": {"type": "string", "description": "Optional region code, e.g. 'ID', 'GB'."},
+                "value": {"type": "number", "description": "Optional activity value to estimate with."},
+                "unit": {"type": "string", "description": "Unit for `value`, e.g. 'kWh', 'km', 'kg'."},
+            },
+            "required": ["query"],
+        },
+    },
     "list_recommendations": {
         "fn": tool_list_recommendations,
         "description": "List ranked decarbonisation actions with carbon impact, cost impact, effort and confidence.",
@@ -414,6 +478,12 @@ def summarize(name: str, result: dict) -> str:
             f"{result.get('count', 0)} methodology passage(s); "
             f"top = {top.get('source')} — {top.get('section')}"
         )
+    if name == "lookup_live_factor":
+        if not result.get("enabled"):
+            return "live factor lookup not configured"
+        if result.get("error"):
+            return f"lookup_live_factor: {result['error']}"
+        return f"{result.get('count', 0)} live factor(s) for {result.get('query')!r}"
     if name == "compare_month":
         if "error" in result:
             return f"compare_month: {result['error']}"

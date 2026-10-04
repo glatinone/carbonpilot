@@ -246,6 +246,23 @@ def build_checks(base: str, ui_url: str | None) -> list[Result]:
             )
         return Result("upload / mapping", OK, f"preview maps {len(types)} activity types: {types}")
 
+    def live_factors() -> Result:
+        """Climatiq is optional, so this warns rather than fails — but the
+        presenter should know the answer before a judge asks it."""
+        _, data = _get(base, "/api/health")
+        if data.get("climatiq_enabled"):
+            return Result(
+                "live factors",
+                OK,
+                "Climatiq configured — the agent can corroborate a factor live",
+            )
+        return Result(
+            "live factors",
+            WARN,
+            "Climatiq not configured; the curated library is the only source. "
+            "Fine to present — say 'production would pull live factors' rather than implying it does.",
+        )
+
     def agent() -> Result:
         started = time.time()
         _, data = _post(base, "/api/chat", {"message": CANONICAL_QUESTION, "company_id": 1})
@@ -282,6 +299,7 @@ def build_checks(base: str, ui_url: str | None) -> list[Result]:
     )
     _check(results, "action plan", actions)
     _check(results, "upload / mapping", upload)
+    _check(results, "live factors", live_factors)
     _check(results, "constraint search", constraint_search)
     _check(results, "agent (Ask panel)", agent)
     return results

@@ -4,64 +4,63 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const LINKS = [
-  { href: "/upload", label: "Upload data", hint: "Ingest" },
-  { href: "/", label: "Dashboard", hint: "Measure" },
-  { href: "/insights", label: "AI Insights", hint: "Diagnose" },
-  { href: "/simulator", label: "Simulator", hint: "Simulate" },
-  { href: "/actions", label: "Action Plan", hint: "Act" },
+  { href: "/upload", label: "Upload data", step: "01", hint: "Ingest" },
+  { href: "/", label: "Dashboard", step: "02", hint: "Measure" },
+  { href: "/insights", label: "AI Insights", step: "03", hint: "Diagnose" },
+  { href: "/simulator", label: "Simulator", step: "04", hint: "Simulate" },
+  { href: "/actions", label: "Action Plan", step: "05", hint: "Act" },
 ];
 
 export function Nav() {
   const pathname = usePathname();
 
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-ink-800/80 bg-ink-950/60 px-5 py-7 lg:flex">
-      <Link href="/" className="flex items-center gap-2.5">
-        <span className="grid h-8 w-8 place-items-center rounded-lg bg-signal-mint text-ink-950">
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.4">
-            <path d="M12 3v6" strokeLinecap="round" />
-            <circle cx="12" cy="14" r="6" />
-            <path d="M12 11v6" strokeLinecap="round" />
-          </svg>
+    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-rule bg-paper-band px-6 py-8 lg:flex">
+      <Link href="/" className="flex items-baseline gap-2.5">
+        <span className="grid h-7 w-7 shrink-0 place-items-center border border-ink bg-ink text-[11px] font-medium text-paper">
+          C
         </span>
-        <span className="text-[15px] font-semibold tracking-tight text-white">CarbonPilot</span>
+        <span className="font-serif text-[19px] font-semibold tracking-tight text-ink">
+          CarbonPilot
+        </span>
       </Link>
 
-      <p className="mt-8 label">Decision loop</p>
-      <nav className="mt-3 flex flex-col gap-1">
+      <p className="kicker mt-7">Decision loop</p>
+      <nav className="mt-2 flex flex-col">
         {LINKS.map((link) => {
           const active = pathname === link.href;
           return (
             <Link
               key={link.href}
               href={link.href}
-              className={`group flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition ${
+              className={`-ml-px flex items-baseline gap-3 border-l-2 py-2.5 pl-3 text-[13px] transition ${
                 active
-                  ? "bg-ink-800/80 text-white"
-                  : "text-slate-400 hover:bg-ink-850/60 hover:text-slate-200"
+                  ? "border-l-ink text-ink"
+                  : "border-l-transparent text-ink-muted hover:border-l-rule-strong hover:text-ink"
               }`}
             >
-              <span className="font-medium">{link.label}</span>
-              <span
-                className={`text-[10px] uppercase tracking-wider ${
-                  active ? "text-signal-mint" : "text-slate-600 group-hover:text-slate-500"
-                }`}
-              >
-                {link.hint}
+              <span className={`fig text-[10px] ${active ? "text-ink" : "text-ink-faint"}`}>
+                {link.step}
               </span>
+              <span className={active ? "font-medium" : ""}>{link.label}</span>
+              <span className="kicker ml-auto">{link.hint}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto space-y-3 pt-8">
-        <div className="rounded-lg border border-ink-700/70 bg-ink-900/60 p-3">
-          <p className="text-[11px] leading-relaxed text-slate-500">
-            Every carbon figure is produced by the calculation engine, not the language model.
+      <div className="mt-auto pt-8">
+        <div className="border-t border-rule pt-4">
+          <p className="text-[11px] leading-relaxed text-ink-muted">
+            Every carbon figure is produced by the calculation engine, never the language model.
           </p>
         </div>
-        <p className="text-[10px] leading-relaxed text-slate-600">
-          GHG Protocol · UK GHG Conversion Factors 2026 · Cloud Carbon Footprint
+        <p className="mt-4 font-mono text-[9.5px] leading-relaxed text-ink-faint">
+          GHG PROTOCOL
+          <br />
+          UK GHG CONVERSION FACTORS 2026
+          <br />
+          CLOUD CARBON FOOTPRINT
         </p>
       </div>
     </aside>

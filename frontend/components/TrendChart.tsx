@@ -19,6 +19,11 @@ type Props = {
   compareSeries?: SeriesPoint[];
 };
 
+/**
+ * A measured series, drawn flat. No gradient under the line and no rounded
+ * tooltip: the fill would imply a magnitude the chart does not measure, and the
+ * reading is meant to come from the figures, not the ink.
+ */
 export function TrendChart({ series, highlightMonth, compareSeries }: Props) {
   const data = series.map((point) => {
     const compare = compareSeries?.find((other) => other.month === point.month);
@@ -30,66 +35,84 @@ export function TrendChart({ series, highlightMonth, compareSeries }: Props) {
     };
   });
 
+  const flagged = series.find((point) => point.month === highlightMonth);
+
   return (
-    <div className="h-64 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-          <defs>
-            <linearGradient id="fillCarbon" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#34d399" stopOpacity={0.35} />
-              <stop offset="100%" stopColor="#34d399" stopOpacity={0.02} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid stroke="#1d2938" strokeDasharray="3 3" vertical={false} />
-          <XAxis
-            dataKey="label"
-            tick={{ fill: "#64748b", fontSize: 11 }}
-            axisLine={{ stroke: "#1d2938" }}
-            tickLine={false}
-          />
-          <YAxis
-            tick={{ fill: "#64748b", fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-            width={54}
-          />
-          <Tooltip
-            contentStyle={{
-              background: "#0f1720",
-              border: "1px solid #1d2938",
-              borderRadius: 8,
-              fontSize: 12,
-              color: "#e2e8f0",
-            }}
-            formatter={(value: number, name: string) => [
-              `${value.toLocaleString("en-US", { maximumFractionDigits: 1 })} tCO₂e`,
-              name === "tco2e" ? "Recorded" : "Projected",
-            ]}
-          />
-          <Area
-            type="monotone"
-            dataKey="tco2e"
-            stroke="#34d399"
-            strokeWidth={2}
-            fill="url(#fillCarbon)"
-          />
-          {compareSeries && (
-            <Line
-              type="monotone"
-              dataKey="projected"
-              stroke="#38bdf8"
-              strokeWidth={2}
-              strokeDasharray="5 4"
-              dot={false}
+    <div className="w-full">
+      <div className="h-60 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+            <CartesianGrid stroke="#eeeeea" vertical={false} />
+            <XAxis
+              dataKey="label"
+              tick={{ fill: "#9a9a8e", fontSize: 10, fontFamily: "var(--font-mono)" }}
+              axisLine={{ stroke: "#e2e0d8" }}
+              tickLine={false}
             />
-          )}
-        </AreaChart>
-      </ResponsiveContainer>
+            <YAxis
+              tick={{ fill: "#9a9a8e", fontSize: 10, fontFamily: "var(--font-mono)" }}
+              axisLine={false}
+              tickLine={false}
+              width={54}
+            />
+            <Tooltip
+              contentStyle={{
+                background: "#ffffff",
+                border: "1px solid #c9c6ba",
+                borderRadius: 2,
+                fontSize: 11.5,
+                fontFamily: "var(--font-mono)",
+                color: "#14150f",
+                padding: "6px 9px",
+              }}
+              labelStyle={{ color: "#6d6d63", fontSize: 10, textTransform: "uppercase" }}
+              formatter={(value: number, name: string) => [
+                `${value.toLocaleString("en-US", { maximumFractionDigits: 1 })} tCO₂e`,
+                name === "tco2e" ? "Recorded" : "Projected",
+              ]}
+            />
+            <Area
+              type="linear"
+              dataKey="tco2e"
+              stroke="#33332e"
+              strokeWidth={1.5}
+              fill="#14150f"
+              fillOpacity={0.04}
+              dot={(props: { cx?: number; cy?: number; payload?: { month: string } }) => {
+                const { cx, cy, payload } = props;
+                if (cx === undefined || cy === undefined) return <g />;
+                const isFlagged = flagged && payload?.month === flagged.month;
+                return (
+                  <rect
+                    x={cx - (isFlagged ? 3 : 1.5)}
+                    y={cy - (isFlagged ? 3 : 1.5)}
+                    width={isFlagged ? 6 : 3}
+                    height={isFlagged ? 6 : 3}
+                    fill={isFlagged ? "#9c5a12" : "#fbfaf7"}
+                    stroke={isFlagged ? "#9c5a12" : "#33332e"}
+                    strokeWidth={1}
+                  />
+                );
+              }}
+            />
+            {compareSeries && (
+              <Line
+                type="linear"
+                dataKey="projected"
+                stroke="#6d6d63"
+                strokeWidth={1.5}
+                strokeDasharray="3 3"
+                dot={false}
+              />
+            )}
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
 
       {highlightMonth && (
-        <p className="mt-1 text-center text-[11px] text-slate-500">
-          Anomaly flagged in{" "}
-          <span className="text-signal-amber">{monthLabel(highlightMonth)}</span>
+        <p className="mt-2 text-[11px] text-ink-muted">
+          Flagged: <span className="fig text-alert">{monthLabel(highlightMonth)}</span> · anomaly
+          detected on the monthly series
         </p>
       )}
     </div>

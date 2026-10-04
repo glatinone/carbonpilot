@@ -4,14 +4,14 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { ActionItem, Recommendation } from "@/lib/types";
 import { RecommendationCard } from "@/components/RecommendationCard";
-import { EmptyState, ErrorBanner, Skeleton } from "@/components/ui";
+import { EmptyState, ErrorBanner, Footnote, SectionHead, Skeleton } from "@/components/ui";
 import { formatTonnes, formatUsd } from "@/lib/format";
 
 const STATUS_STYLE: Record<string, string> = {
-  open: "border-signal-sky/40 text-signal-sky",
-  in_progress: "border-signal-amber/40 text-signal-amber",
-  done: "border-signal-mint/40 text-signal-mint",
-  cancelled: "border-ink-600 text-slate-500",
+  open: "border-rule-strong text-ink-muted",
+  in_progress: "border-alert/50 text-alert",
+  done: "border-save/50 text-save",
+  cancelled: "border-rule-strong text-ink-faint",
 };
 
 export default function ActionsPage() {
@@ -62,27 +62,23 @@ export default function ActionsPage() {
   const visible = showAll ? recommendations : recommendations.slice(0, 8);
 
   return (
-    <div className="space-y-6">
+    <div>
       <Header onReload={load} />
 
       {loading ? (
         <>
-          <Skeleton className="h-40" />
-          <Skeleton className="h-40" />
+          <Skeleton className="mt-8 h-40" />
+          <Skeleton className="mt-6 h-40" />
         </>
       ) : (
         <>
           {/* Ranked actions */}
-          <section className="space-y-4">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="text-sm font-semibold text-white">
-                Ranked recommendations ({recommendations.length})
-              </h2>
-              <p className="text-[11px] text-slate-500">
-                Score = carbon × cost × effort, weighted by confidence. Not &ldquo;biggest number
-                wins&rdquo;.
-              </p>
-            </div>
+          <section className="mt-8 border-t border-rule pt-4">
+            <SectionHead
+              kicker="Register"
+              title={`Ranked recommendations (${recommendations.length})`}
+              note="carbon × cost × effort, weighted by confidence"
+            />
 
             {recommendations.length === 0 ? (
               <EmptyState
@@ -103,7 +99,7 @@ export default function ActionsPage() {
             {recommendations.length > 8 && (
               <button
                 type="button"
-                className="btn-ghost w-full"
+                className="btn-ghost mt-4 w-full"
                 onClick={() => setShowAll((value) => !value)}
               >
                 {showAll ? "Show top 8 only" : `Show all ${recommendations.length}`}
@@ -112,54 +108,54 @@ export default function ActionsPage() {
           </section>
 
           {/* Tracked actions */}
-          <section className="card card-pad">
-            <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="text-sm font-semibold text-white">
-                Action plan ({actions.length})
-              </h2>
-              <div className="flex flex-wrap items-center gap-3">
-                {totals && actions.length > 0 && (
-                  <span className="metric text-[11px] text-slate-400">
-                    if all executed: −{totals.expected_carbon_t.toLocaleString("en-US", {
+          <section className="mt-8 border-t border-rule pt-4">
+            <SectionHead
+              kicker="Plan"
+              title={`Action plan (${actions.length})`}
+              note={
+                totals && actions.length > 0
+                  ? `if all executed: −${totals.expected_carbon_t.toLocaleString("en-US", {
                       maximumFractionDigits: 0,
-                    })}{" "}
-                    tCO₂e · {formatUsd(totals.expected_cost_usd)}/yr
-                  </span>
-                )}
-                {actions.length > 0 && (
-                  <>
+                    })} tCO₂e · ${formatUsd(totals.expected_cost_usd)}/yr`
+                  : undefined
+              }
+              action={
+                actions.length > 0 ? (
+                  <div className="flex items-center gap-2">
                     <a
-                      className="btn-ghost px-3 py-1.5 text-xs"
+                      className="btn-ghost px-3 py-1.5 text-[12px]"
                       href={api.exportActionsUrl("md")}
                       title="Download this plan with its expected impact and assumptions"
                     >
                       Download .md
                     </a>
                     <a
-                      className="btn-ghost px-3 py-1.5 text-xs"
+                      className="btn-ghost px-3 py-1.5 text-[12px]"
                       href={api.exportActionsUrl("csv")}
                       title="Download this plan as a spreadsheet"
                     >
                       Download .csv
                     </a>
-                  </>
-                )}
-              </div>
-            </div>
+                  </div>
+                ) : undefined
+              }
+            />
 
             {actions.length === 0 ? (
-              <p className="py-6 text-center text-xs text-slate-500">
+              <p className="py-6 text-[12px] text-ink-muted">
                 No actions created yet. Approve a recommendation above to assign it an owner.
               </p>
             ) : (
-              <ul className="divide-y divide-ink-800/80">
+              <ul>
                 {actions.map((action) => (
-                  <li key={action.id} className="flex flex-wrap items-center gap-3 py-3">
+                  <li
+                    key={action.id}
+                    className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-rule py-3 last:border-b-0"
+                  >
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-medium text-slate-200">{action.task}</p>
-                      <p className="mt-0.5 text-[11px] text-slate-500">
-                        Owner: {action.owner} · expected −
-                        {formatTonnes(action.expected_carbon_t)} ·{" "}
+                      <p className="truncate text-[12.5px] text-ink">{action.task}</p>
+                      <p className="fig mt-0.5 text-[11px] text-ink-muted">
+                        Owner: {action.owner} · expected −{formatTonnes(action.expected_carbon_t)} ·{" "}
                         {formatUsd(action.expected_cost_usd)}/yr
                       </p>
                     </div>
@@ -169,7 +165,7 @@ export default function ActionsPage() {
                     {action.status !== "done" && (
                       <button
                         type="button"
-                        className="btn-ghost px-3 py-1.5 text-xs"
+                        className="btn-ghost px-3 py-1.5 text-[12px]"
                         onClick={() => void advance(action)}
                       >
                         {action.status === "open" ? "Start" : "Complete"}
@@ -181,9 +177,9 @@ export default function ActionsPage() {
             )}
 
             {note && (
-              <p className="mt-4 border-t border-ink-700/60 pt-3 text-[11px] text-slate-500">
-                {note}
-              </p>
+              <div className="mt-5">
+                <Footnote>{note}</Footnote>
+              </div>
             )}
           </section>
         </>
@@ -194,16 +190,23 @@ export default function ActionsPage() {
 
 function Header({ onReload }: { onReload?: () => void }) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-3">
+    <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b-2 border-ink pb-4">
       <div>
-        <p className="label">Act</p>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight text-white">Action Plan</h1>
+        <p className="kicker">Act</p>
+        <h1 className="mt-1.5 font-serif text-[26px] font-semibold leading-none tracking-tight text-ink">
+          Action Plan
+        </h1>
       </div>
-      {onReload && (
-        <button type="button" className="btn-ghost" onClick={onReload}>
-          Refresh analysis
-        </button>
-      )}
+      <div className="flex items-center gap-4">
+        <p className="max-w-[40ch] font-serif text-[15px] leading-snug text-ink-soft">
+          Ranked by impact and effort, then tracked to an owner
+        </p>
+        {onReload && (
+          <button type="button" className="btn-ghost" onClick={onReload}>
+            Refresh analysis
+          </button>
+        )}
+      </div>
     </header>
   );
 }

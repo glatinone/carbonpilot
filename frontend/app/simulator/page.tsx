@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import type { ConstraintSearch, Intervention, ScenarioResult } from "@/lib/types";
-import { ErrorBanner, Skeleton } from "@/components/ui";
+import { ErrorBanner, Footnote, SectionHead, Skeleton } from "@/components/ui";
 import { TrendChart } from "@/components/TrendChart";
 import { formatTonnes, formatUsd, titleize } from "@/lib/format";
 import { useDashboard } from "@/lib/hooks";
@@ -127,16 +127,13 @@ export default function SimulatorPage() {
   }, [dashboard, result]);
 
   return (
-    <div className="space-y-6">
+    <div>
       <Header />
 
-      <div className="grid gap-5 lg:grid-cols-[1.25fr_1fr]">
+      <div className="mt-8 grid gap-x-10 gap-y-8 lg:grid-cols-[1.15fr_1fr]">
         {/* Sliders */}
-        <section className="card card-pad">
-          <div className="mb-4 flex items-baseline justify-between">
-            <h2 className="text-sm font-semibold text-white">What-if simulator</h2>
-            <span className="text-[11px] text-slate-500">drag to model an intervention</span>
-          </div>
+        <section className="border-t border-rule pt-4">
+          <SectionHead kicker="Interventions" title="What-if simulator" note="drag to model" />
 
           {dashLoading || sliders.length === 0 ? (
             <Skeleton className="h-72" />
@@ -148,17 +145,13 @@ export default function SimulatorPage() {
                   <div key={slider.activity_type}>
                     <div className="mb-2 flex items-baseline justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="truncate text-xs font-medium text-slate-300">
-                          {slider.title}
-                        </p>
-                        <p className="text-[10px] text-slate-600">
+                        <p className="truncate text-[12.5px] text-ink">{slider.title}</p>
+                        <p className="text-[10.5px] text-ink-faint">
                           {titleize(slider.activity_type)} · {slider.effort} effort · suggested{" "}
                           {slider.preset}%
                         </p>
                       </div>
-                      <span className="metric shrink-0 text-sm font-semibold text-signal-mint">
-                        {value}%
-                      </span>
+                      <span className="fig shrink-0 text-[13px] text-ink">{value}%</span>
                     </div>
                     <input
                       type="range"
@@ -181,65 +174,63 @@ export default function SimulatorPage() {
         </section>
 
         {/* Projection */}
-        <section className="card card-pad">
-          <h2 className="mb-4 text-sm font-semibold text-white">Estimated impact</h2>
+        <section className="border-t border-rule pt-4">
+          <SectionHead kicker="Result" title="Estimated impact" note={result ? "live" : undefined} />
 
           {runError && <ErrorBanner message={runError} />}
 
           {!result ? (
-            <div className="py-10 text-center">
-              <p className="text-xs text-slate-500">
-                Move a slider to simulate. Nothing leaves the baseline until you change something.
-              </p>
-            </div>
+            <p className="py-10 text-[12px] leading-relaxed text-ink-muted">
+              Move a slider to simulate. Nothing leaves the baseline until you change something.
+            </p>
           ) : (
-            <div className="space-y-5">
-              <div className="flex items-end justify-between rounded-lg border border-ink-700/60 bg-ink-950/50 p-4">
+            <div>
+              <div className="flex items-end justify-between gap-6 border-b border-rule pb-4">
                 <div>
-                  <p className="label">Projected footprint</p>
-                  <p className="metric mt-1.5 text-3xl font-semibold text-white">
+                  <p className="kicker">Projected footprint</p>
+                  <p className="fig mt-2 text-[34px] font-medium leading-none tracking-tight text-ink">
                     {result.projected.total_tco2e.toLocaleString("en-US", {
                       maximumFractionDigits: 0,
                     })}
                   </p>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="mt-1.5 text-[11.5px] text-ink-muted">
                     from {result.baseline.total_tco2e.toLocaleString("en-US")} tCO₂e
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="metric text-2xl font-semibold text-signal-mint">
+                  <p className="fig text-[22px] font-medium leading-none text-save">
                     −{result.impact.carbon_reduction_pct.toFixed(1)}%
                   </p>
-                  <p className="metric text-xs text-slate-400">
+                  <p className="fig mt-1.5 text-[12px] text-ink-muted">
                     {formatTonnes(result.impact.carbon_saving_tco2e)}
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-lg border border-ink-700/60 p-3">
-                  <p className="label">Annual cost impact</p>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-5 border-b border-rule py-4">
+                <div>
+                  <p className="kicker">Annual cost impact</p>
                   <p
-                    className={`metric mt-1 text-lg font-semibold ${
-                      result.impact.cost_delta_usd <= 0 ? "text-signal-mint" : "text-signal-rose"
+                    className={`fig mt-1.5 text-[19px] font-medium leading-none ${
+                      result.impact.cost_delta_usd <= 0 ? "text-save" : "text-alert"
                     }`}
                   >
                     {formatUsd(result.impact.cost_delta_usd)}
                   </p>
-                  <p className="text-[10px] text-slate-500">{result.impact.cost_direction}</p>
+                  <p className="mt-1 text-[10.5px] text-ink-faint">{result.impact.cost_direction}</p>
                 </div>
-                <div className="rounded-lg border border-ink-700/60 p-3">
-                  <p className="label">Interventions</p>
-                  <p className="metric mt-1 text-lg font-semibold text-white">
+                <div>
+                  <p className="kicker">Interventions</p>
+                  <p className="fig mt-1.5 text-[19px] font-medium leading-none text-ink">
                     {result.per_intervention.filter((i) => !("error" in i)).length}
                   </p>
-                  <p className="text-[10px] text-slate-500">applied together</p>
+                  <p className="mt-1 text-[10.5px] text-ink-faint">applied together</p>
                 </div>
               </div>
 
-              <div>
-                <p className="label mb-2">Per intervention</p>
-                <ul className="space-y-1.5">
+              <div className="pt-4">
+                <p className="kicker mb-2">Per intervention</p>
+                <ul>
                   {result.per_intervention
                     .filter((item) => !("error" in item))
                     .map((item) => {
@@ -247,10 +238,12 @@ export default function SimulatorPage() {
                       return (
                         <li
                           key={String(row.activity_type)}
-                          className="flex items-center justify-between gap-3 text-[11px]"
+                          className="flex items-baseline justify-between gap-4 border-b border-rule py-2 last:border-b-0"
                         >
-                          <span className="truncate text-slate-400">{String(row.title)}</span>
-                          <span className="metric shrink-0 text-slate-300">
+                          <span className="truncate text-[11.5px] text-ink-soft">
+                            {String(row.title)}
+                          </span>
+                          <span className="fig shrink-0 text-[11.5px] text-ink">
                             −{Number(row.carbon_saving_tco2e).toFixed(1)} t ·{" "}
                             {formatUsd(Number(row.cost_delta_usd))}
                           </span>
@@ -260,20 +253,17 @@ export default function SimulatorPage() {
                 </ul>
               </div>
 
-              <details className="rounded-lg border border-ink-700/60 bg-ink-950/40 p-3">
-                <summary className="cursor-pointer text-[11px] font-medium text-slate-400">
+              <details className="mt-4 border-t border-rule pt-3">
+                <summary className="cursor-pointer text-[11.5px] text-ink-muted">
                   Assumptions ({result.assumptions.length})
                 </summary>
-                <ul className="mt-2 space-y-1">
+                <ul className="mt-2">
                   {result.assumptions.map((assumption) => (
-                    <li key={assumption} className="text-[11px] leading-relaxed text-slate-500">
-                      • {assumption}
+                    <li key={assumption} className="text-[11px] leading-relaxed text-ink-muted">
+                      {assumption}
                     </li>
                   ))}
                 </ul>
-                <p className="mt-2 text-[11px] text-signal-amber">
-                  Estimated impact — not a precise forecast.
-                </p>
               </details>
             </div>
           )}
@@ -281,28 +271,31 @@ export default function SimulatorPage() {
       </div>
 
       {dashboard && projectedSeries && (
-        <section className="card card-pad">
-          <h2 className="mb-4 text-sm font-semibold text-white">
-            Recorded vs projected trajectory
-          </h2>
+        <section className="mt-8 border-t border-rule pt-4">
+          <SectionHead
+            kicker="Trajectory"
+            title="Recorded vs projected"
+            note="solid = recorded · dashed = projected"
+          />
           <TrendChart series={dashboard.series} compareSeries={projectedSeries} />
         </section>
       )}
 
       {/* Constraint mode */}
-      <section className="card card-pad">
-        <div className="mb-4">
-          <h2 className="text-sm font-semibold text-white">Constraint search</h2>
-          <p className="mt-1 text-xs text-slate-500">
-            &ldquo;Reduce carbon by X% without increasing operating cost&rdquo; — the engine
-            enumerates intervention combinations and returns the ones that satisfy both
-            constraints.
-          </p>
-        </div>
+      <section className="mt-8 border-t border-rule pt-4">
+        <SectionHead
+          kicker="Inverse solve"
+          title="Constraint search"
+          note="reduce carbon by X% without raising cost"
+        />
+        <p className="max-w-[70ch] text-[12.5px] leading-relaxed text-ink-muted">
+          The engine enumerates intervention combinations and returns the ones that satisfy both
+          constraints — the direction a target-setting conversation actually runs.
+        </p>
 
-        <div className="flex flex-wrap items-end gap-4">
+        <div className="mt-5 flex flex-wrap items-end gap-x-6 gap-y-4">
           <div>
-            <label className="label mb-1.5 block">Min. carbon reduction</label>
+            <label className="kicker mb-2 block">Minimum carbon reduction</label>
             <div className="flex items-center gap-3">
               <input
                 type="range"
@@ -312,12 +305,12 @@ export default function SimulatorPage() {
                 onChange={(event) => setTargetPct(Number(event.target.value))}
                 className="w-48"
               />
-              <span className="metric w-12 text-sm font-semibold text-signal-mint">{targetPct}%</span>
+              <span className="fig w-12 text-[13px] text-ink">{targetPct}%</span>
             </div>
           </div>
 
           <div>
-            <label className="label mb-1.5 block">Max. cost increase (USD/yr)</label>
+            <label className="kicker mb-2 block">Maximum cost increase (USD/yr)</label>
             <input
               type="number"
               className="input w-40"
@@ -343,27 +336,31 @@ export default function SimulatorPage() {
         )}
 
         {search && (
-          <div className="mt-5 space-y-4">
-            <p className="text-xs text-slate-400">
+          <div className="mt-6">
+            <p className="text-[12.5px] text-ink-muted">
               {search.message}{" "}
-              <span className="text-slate-600">
+              <span className="fig text-ink-faint">
                 ({search.scenarios_evaluated} scenarios evaluated)
               </span>
             </p>
 
             {search.recommended && (
-              <div className="rounded-lg border border-signal-mint/40 bg-signal-mint/5 p-4">
-                <p className="label text-signal-mint">Best feasible scenario</p>
-                <p className="mt-1 text-sm font-medium text-white">{search.recommended.label}</p>
-                <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-xs">
-                  <span className="metric text-signal-mint">
+              <div className="mt-4 border-l-2 border-y border-r border-l-save border-rule px-4 py-3">
+                <p className="kicker text-save">Best feasible scenario</p>
+                <p className="mt-1.5 font-serif text-[17px] font-semibold leading-snug text-ink">
+                  {search.recommended.label}
+                </p>
+                <div className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-1.5">
+                  <span className="fig text-[13px] text-save">
                     −{search.recommended.carbon_reduction_pct.toFixed(1)}% carbon
                   </span>
-                  <span className="metric text-slate-300">
+                  <span className="fig text-[13px] text-ink">
                     {formatUsd(search.recommended.cost_delta_usd)}/yr
                   </span>
-                  <span className="text-slate-400">{search.recommended.effort} effort</span>
-                  <span className="metric text-slate-400">
+                  <span className="text-[11.5px] text-ink-muted">
+                    {search.recommended.effort} effort
+                  </span>
+                  <span className="fig text-[11.5px] text-ink-muted">
                     {search.recommended.confidence_pct.toFixed(0)}% confidence
                   </span>
                 </div>
@@ -371,33 +368,27 @@ export default function SimulatorPage() {
             )}
 
             {search.feasible.length > 0 && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+              <div className="mt-5 overflow-x-auto">
+                <table className="ledger">
                   <thead>
-                    <tr className="border-b border-ink-700/60 text-[10px] uppercase tracking-wider text-slate-500">
-                      <th className="pb-2 pr-4 font-medium">Scenario</th>
-                      <th className="pb-2 pr-4 text-right font-medium">Carbon</th>
-                      <th className="pb-2 pr-4 text-right font-medium">Cost</th>
-                      <th className="pb-2 pr-4 font-medium">Effort</th>
-                      <th className="pb-2 text-right font-medium">Confidence</th>
+                    <tr>
+                      <th>Scenario</th>
+                      <th>Carbon</th>
+                      <th>Cost</th>
+                      <th>Effort</th>
+                      <th>Confidence</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-ink-800/80">
+                  <tbody>
                     {search.feasible.map((scenario) => (
                       <tr key={scenario.label}>
-                        <td className="max-w-md truncate py-2.5 pr-4 text-slate-300">
-                          {scenario.label}
-                        </td>
-                        <td className="py-2.5 pr-4 text-right font-mono text-signal-mint">
+                        <td>{scenario.label}</td>
+                        <td className="text-save">
                           −{scenario.carbon_reduction_pct.toFixed(1)}%
                         </td>
-                        <td className="py-2.5 pr-4 text-right font-mono text-slate-300">
-                          {formatUsd(scenario.cost_delta_usd)}
-                        </td>
-                        <td className="py-2.5 pr-4 text-slate-400">{scenario.effort}</td>
-                        <td className="py-2.5 text-right font-mono text-slate-400">
-                          {scenario.confidence_pct.toFixed(0)}%
-                        </td>
+                        <td>{formatUsd(scenario.cost_delta_usd)}</td>
+                        <td>{scenario.effort}</td>
+                        <td>{scenario.confidence_pct.toFixed(0)}%</td>
                       </tr>
                     ))}
                   </tbody>
@@ -406,18 +397,18 @@ export default function SimulatorPage() {
             )}
 
             {search.feasible.length === 0 && search.infeasible.length > 0 && (
-              <div>
-                <p className="mb-2 text-[11px] text-signal-amber">
+              <div className="mt-5 border-t border-rule pt-3">
+                <p className="mb-2 text-[11.5px] text-alert">
                   No combination satisfies both constraints. Closest alternatives:
                 </p>
-                <ul className="space-y-1.5">
+                <ul>
                   {search.infeasible.slice(0, 3).map((scenario) => (
                     <li
                       key={scenario.label}
-                      className="flex items-center justify-between gap-3 text-[11px]"
+                      className="flex items-baseline justify-between gap-4 border-b border-rule py-2 last:border-b-0"
                     >
-                      <span className="truncate text-slate-400">{scenario.label}</span>
-                      <span className="metric shrink-0 text-slate-300">
+                      <span className="truncate text-[11.5px] text-ink-soft">{scenario.label}</span>
+                      <span className="fig shrink-0 text-[11.5px] text-ink">
                         {scenario.carbon_reduction_pct.toFixed(1)}% ·{" "}
                         {formatUsd(scenario.cost_delta_usd)}
                       </span>
@@ -428,6 +419,15 @@ export default function SimulatorPage() {
             )}
           </div>
         )}
+
+        <div className="mt-5">
+          <Footnote>
+            <b>Method.</b> Linear scaling of each intervention against measured activity data —
+            emission factors held constant, no rebound effect or learning curve modelled. Scenario
+            count and the feasible set are computed, never sampled.{" "}
+            <b>Estimated impact, not a precise forecast.</b>
+          </Footnote>
+        </div>
       </section>
     </div>
   );
@@ -435,14 +435,16 @@ export default function SimulatorPage() {
 
 function Header() {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-3">
+    <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b-2 border-ink pb-4">
       <div>
-        <p className="label">Simulate</p>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight text-white">
+        <p className="kicker">Simulate</p>
+        <h1 className="mt-1.5 font-serif text-[26px] font-semibold leading-none tracking-tight text-ink">
           Scenario Simulator
         </h1>
       </div>
-      <span className="chip">Estimated impact · assumptions shown</span>
+      <p className="max-w-[44ch] font-serif text-[15px] leading-snug text-ink-soft">
+        A linear engine over measured activity data — estimated impact, with every assumption shown
+      </p>
     </header>
   );
 }

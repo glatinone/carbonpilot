@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html,
@@ -12,42 +12,97 @@ body {
 }
 
 body {
-  @apply bg-ink-950 text-slate-200 antialiased;
-  background-image:
-    radial-gradient(1200px 600px at 12% -10%, rgba(52, 211, 153, 0.09), transparent 60%),
-    radial-gradient(900px 500px at 92% 0%, rgba(56, 189, 248, 0.08), transparent 55%);
-  background-attachment: fixed;
+  @apply bg-paper text-ink antialiased;
+}
+
+@layer base {
+  ::selection {
+    @apply bg-ink text-paper;
+  }
 }
 
 @layer components {
-  .card {
-    @apply rounded-xl border border-ink-700/70 bg-ink-900/70 backdrop-blur-sm;
+  /* --- type roles ------------------------------------------------------ */
+  /* Three voices, one job each: serif states, sans explains, mono measures. */
+  .kicker {
+    @apply font-mono text-[10px] uppercase tracking-kicker text-ink-faint;
   }
-  .card-pad {
-    @apply p-5;
-  }
-  .label {
-    @apply text-[11px] font-medium uppercase tracking-[0.14em] text-slate-500;
-  }
-  .metric {
+  .fig {
     @apply font-mono tabular-nums;
   }
-  .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-ink-600/70 bg-ink-800/60 px-2.5 py-1 text-[11px] font-medium text-slate-300;
+
+  /* --- structure: hairlines and bands, never elevation ----------------- */
+  .band {
+    @apply border-t border-rule;
   }
+  .band-strong {
+    @apply border-t-2 border-ink;
+  }
+  .panel {
+    @apply rounded-sm border border-rule bg-paper-panel;
+  }
+  .panel-pad {
+    @apply p-5;
+  }
+
+  /* --- controls -------------------------------------------------------- */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition
-           disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-sm px-3.5 py-2 text-[13px] font-medium
+           transition disabled:cursor-not-allowed disabled:opacity-40;
   }
   .btn-primary {
-    @apply btn bg-signal-mint text-ink-950 hover:bg-emerald-300;
+    @apply btn bg-ink text-paper hover:bg-ink-soft;
   }
   .btn-ghost {
-    @apply btn border border-ink-600 text-slate-300 hover:border-slate-500 hover:text-white;
+    @apply btn border border-rule-strong text-ink-soft hover:border-ink hover:text-ink;
+  }
+  .btn-quiet {
+    @apply text-[12px] text-ink-muted underline decoration-rule-strong underline-offset-4
+           transition hover:text-ink hover:decoration-ink;
   }
   .input {
-    @apply w-full rounded-lg border border-ink-600 bg-ink-950/60 px-3 py-2 text-sm text-slate-200
-           placeholder:text-slate-600 focus:border-signal-mint focus:outline-none;
+    @apply w-full rounded-sm border border-rule-strong bg-paper-panel px-3 py-2 text-[13px] text-ink
+           placeholder:text-ink-faint focus:border-ink focus:outline-none;
+  }
+  .select {
+    @apply rounded-sm border border-rule-strong bg-paper-panel px-2.5 py-1.5 text-[12px] text-ink-soft
+           focus:border-ink focus:outline-none;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-sm border border-rule-strong px-2 py-0.5
+           font-mono text-[10.5px] uppercase tracking-[0.08em] text-ink-muted;
+  }
+
+  /* --- ledger table: figures right-aligned so columns can be compared --- */
+  .ledger {
+    @apply w-full border-collapse text-[12.5px];
+  }
+  .ledger thead th {
+    @apply border-b border-rule-strong pb-2 text-right font-mono text-[9.5px] font-normal uppercase
+           tracking-kicker text-ink-faint;
+  }
+  .ledger thead th:first-child {
+    @apply text-left;
+  }
+  .ledger tbody td {
+    @apply border-b border-rule py-2.5 text-right font-mono tabular-nums;
+  }
+  .ledger tbody td:first-child {
+    @apply text-left font-sans text-ink;
+  }
+  .ledger tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  /* --- footnotes: where the provenance lives --------------------------- */
+  .footnote {
+    @apply border-t border-rule bg-paper-band px-5 py-3.5 text-[11px] leading-relaxed text-ink-muted;
+  }
+  .footnote b {
+    @apply font-medium text-ink;
+  }
+  .sup {
+    @apply align-super text-[8.5px] text-ink-faint;
   }
 }
 
@@ -59,16 +114,22 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply rounded-full bg-ink-700;
+  @apply rounded-full bg-rule-strong;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-ink-600;
+  @apply bg-ink-faint;
 }
 
+/* Square, flat, no glow — a slider is a measuring instrument, not a toy. */
 input[type="range"] {
-  @apply h-1.5 w-full cursor-pointer appearance-none rounded-full bg-ink-700;
+  @apply h-px w-full cursor-pointer appearance-none bg-rule-strong;
 }
 input[type="range"]::-webkit-slider-thumb {
-  @apply h-4 w-4 appearance-none rounded-full bg-signal-mint;
-  box-shadow: 0 0 0 3px rgba(163, 230, 53, 0.18);
+  @apply h-3.5 w-3.5 appearance-none rounded-none border border-ink bg-paper;
+}
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  @apply bg-ink;
+}
+input[type="range"]::-moz-range-thumb {
+  @apply h-3.5 w-3.5 rounded-none border border-ink bg-paper;
 }

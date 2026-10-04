@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { AskPilot } from "@/components/AskPilot";
-import { BreakdownBars } from "@/components/BreakdownBars";
 import { TrendChart } from "@/components/TrendChart";
-import { ErrorBanner, Skeleton, StatCard } from "@/components/ui";
+import { ErrorBanner, Footnote, SectionHead, Skeleton, Stat } from "@/components/ui";
 import { useDashboard } from "@/lib/hooks";
-import { formatPct, formatTonnes, formatUsd, titleize } from "@/lib/format";
+import { formatPct, formatTonnes, formatUsd, monthLabel, titleize } from "@/lib/format";
 
 export default function DashboardPage() {
   const { data, loading, error, reload } = useDashboard();
@@ -48,148 +47,233 @@ export default function DashboardPage() {
     .filter((row) => row.key.startsWith("cloud"))
     .reduce((sum, row) => sum + row.cost_usd, 0);
   const totalCost = baseline.total_cost_usd || 1;
+  const cloudShare = (cloudCost / totalCost) * 100;
+  const largestLine = breakdown[0];
+  const insightCount = insights.length;
 
   return (
-    <div className="space-y-6">
+    <div>
       <Header company={data.company.name} region={data.company.region} period={baseline.period} />
 
-      {/* Hero */}
-      <section className="card card-pad grid gap-6 lg:grid-cols-[1.15fr_1fr]">
-        <div>
-          <p className="label">Estimated footprint</p>
-          <div className="mt-2 flex items-end gap-3">
-            <span className="metric text-5xl font-semibold tracking-tight text-white">
-              {baseline.total_tco2e.toLocaleString("en-US", { maximumFractionDigits: 0 })}
-            </span>
-            <span className="pb-1.5 text-sm text-slate-400">tCO₂e / year</span>
-          </div>
-          {data.trend_pct !== null && (
-            <p
-              className={`mt-2 text-sm ${
-                data.trend_pct > 0 ? "text-signal-rose" : "text-signal-mint"
-              }`}
-            >
-              {formatPct(data.trend_pct)} vs previous month
-            </p>
-          )}
-          <p className="mt-4 max-w-md text-xs leading-relaxed text-slate-500">
-            Measured from {baseline.activity_count} activity records across{" "}
-            {baseline.month_count} months, using cited emission factors under the GHG Protocol.
-          </p>
-        </div>
+      {/* Statement band. The finding is written as a sentence and the figure sits
+          inside it in tabular mono — the composition the Monitor surface was missing. */}
+      <section className="mt-7">
+        <div className="grid gap-x-12 gap-y-8 lg:grid-cols-[1.45fr_1fr]">
+          <div>
+            <p className="kicker">Estimated footprint, annualised</p>
+            <div className="mt-2.5 flex flex-wrap items-baseline gap-x-4 gap-y-2">
+              <span className="fig text-[46px] font-medium leading-none tracking-[-0.02em] text-ink">
+                {baseline.total_tco2e.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+              </span>
+              <span className="text-[13px] text-ink-muted">tCO₂e / year</span>
+              {data.trend_pct !== null && (
+                <span
+                  className={`fig border border-rule-strong px-2 py-0.5 text-[11.5px] ${
+                    data.trend_pct > 0 ? "text-alert" : "text-save"
+                  }`}
+                >
+                  {formatPct(data.trend_pct)} vs previous month
+                </span>
+              )}
+            </div>
 
-        <div className="grid grid-cols-2 gap-4 self-start">
-          <StatCard
-            label="Operating cost"
-            value={formatUsd(baseline.total_cost_usd).replace("+", "")}
-            sub="tracked activity lines"
-          />
-          <StatCard
-            label="Cloud cost share"
-            value={`${((cloudCost / totalCost) * 100).toFixed(0)}%`}
-            sub="of tracked spend"
-            accent="text-signal-sky"
-          />
-          <StatCard
-            label="Opportunities"
-            value={String(data.opportunity_count)}
-            sub="ranked actions found"
-            accent="text-signal-mint"
-          />
-          <StatCard
-            label="Anomalies"
-            value={String(anomalies.filter((a) => a.activity_type !== "all").length)}
-            sub="statistically flagged"
-            accent="text-signal-amber"
-          />
+            <p className="mt-5 max-w-[56ch] font-serif text-[19px] leading-[1.55] text-ink-soft">
+              {largestLine && (
+                <>
+                  <b className="font-semibold text-ink">{titleize(largestLine.key)}</b> is the
+                  largest line at{" "}
+                  <b className="font-semibold text-ink">{largestLine.pct.toFixed(1)}%</b> of the
+                  footprint
+                </>
+              )}
+              {topAnomaly && (
+                <>
+                  , and{" "}
+                  <b className="font-semibold text-ink">{titleize(topAnomaly.activity_type)}</b>{" "}
+                  moved <b className="font-semibold text-alert">{formatPct(topAnomaly.change_pct)}</b>{" "}
+                  in {monthLabel(topAnomaly.month)}.
+                </>
+              )}
+            </p>
+
+            <div className="mt-6">
+              <p className="kicker mb-2.5">Scope split</p>
+              <div className="flex gap-0.5">
+                <span className="h-3 bg-ink" style={{ flex: 11.6 }} />
+                <span className="h-3 bg-ink-muted" style={{ flex: 27.3 }} />
+                <span className="h-3 bg-bar" style={{ flex: 61.1 }} />
+              </div>
+              <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-[11.5px] text-ink-muted">
+                {scopeRows.map((row) => (
+                  <span key={row.key}>
+                    {row.key} <span className="fig text-ink">{row.pct.toFixed(1)}%</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-6 gap-y-6 self-start">
+            <Stat
+              label="Operating cost"
+              value={formatUsd(baseline.total_cost_usd).replace("+", "")}
+              sub="tracked activity lines"
+            />
+            <Stat
+              label="Cloud spend share"
+              value={`${cloudShare.toFixed(0)}%`}
+              sub={`${formatTonnes(baseline.scope_split.scope_2?.tco2e ?? 0)} in scope 2`}
+            />
+            <Stat
+              label="Opportunities"
+              value={String(data.opportunity_count)}
+              sub="ranked actions"
+              tone="save"
+            />
+            <Stat
+              label="Signals"
+              value={String(insightCount)}
+              sub="statistically flagged"
+              tone="alert"
+            />
+          </div>
         </div>
       </section>
 
       {/* AI is the primary UI */}
-      <AskPilot />
+      <div className="mt-8">
+        <AskPilot />
+      </div>
 
-      {/* Charts */}
-      <div className="grid gap-5 lg:grid-cols-2">
-        <section className="card card-pad">
-          <div className="mb-4 flex items-baseline justify-between">
-            <h2 className="text-sm font-semibold text-white">Monthly emissions</h2>
-            <span className="text-[11px] text-slate-500">{baseline.period?.start} → {baseline.period?.end}</span>
-          </div>
+      {/* Charts, as ruled bands rather than two cards */}
+      <div className="mt-8 grid gap-x-10 gap-y-8 lg:grid-cols-2">
+        <section className="border-t border-rule pt-4">
+          <SectionHead
+            kicker="Trend"
+            title="Monthly emissions"
+            note={`${baseline.period?.start ?? ""} → ${baseline.period?.end ?? ""}`}
+          />
           <TrendChart series={series} highlightMonth={topAnomaly?.month} />
         </section>
 
-        <section className="card card-pad">
-          <div className="mb-4 flex items-baseline justify-between">
-            <h2 className="text-sm font-semibold text-white">Emission breakdown</h2>
-            <span className="text-[11px] text-slate-500">by category</span>
-          </div>
-          <BreakdownBars rows={breakdown} showCost />
-          <div className="mt-5 border-t border-ink-700/60 pt-4">
-            <p className="label mb-3">Scope split</p>
-            <BreakdownBars rows={scopeRows} />
-          </div>
+        <section className="border-t border-rule pt-4">
+          <SectionHead
+            kicker="Sources"
+            title="Where it comes from"
+            note={`${breakdown.length} streams`}
+          />
+          <table className="ledger">
+            <thead>
+              <tr>
+                <th>Stream</th>
+                <th>tCO₂e</th>
+                <th>Share</th>
+                <th>Cost USD</th>
+              </tr>
+            </thead>
+            <tbody>
+              {breakdown.map((row) => (
+                <tr key={row.key}>
+                  <td>{titleize(row.key)}</td>
+                  <td>{row.tco2e.toLocaleString("en-US", { maximumFractionDigits: 1 })}</td>
+                  <td>{row.pct.toFixed(1)}%</td>
+                  <td>{row.cost_usd.toLocaleString("en-US", { maximumFractionDigits: 0 })}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </section>
       </div>
 
-      {/* Insights + actions */}
-      <div className="grid gap-5 lg:grid-cols-2">
-        <section className="card card-pad">
-          <div className="mb-4 flex items-baseline justify-between">
-            <h2 className="text-sm font-semibold text-white">AI found {insights.length} signals</h2>
-            <Link href="/insights" className="text-[11px] text-signal-mint hover:underline">
-              Investigate →
-            </Link>
-          </div>
-          <ul className="space-y-3">
-            {insights.slice(0, 3).map((insight) => (
-              <li key={`${insight.activity_type}-${insight.month}`} className="flex gap-3">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-signal-rose" />
-                <div>
-                  <p className="text-xs font-medium text-slate-200">{insight.headline}</p>
-                  <p className="mt-0.5 text-[11px] leading-relaxed text-slate-500">
+      {/* Signals + ranked actions */}
+      <div className="mt-8 grid gap-x-10 gap-y-8 lg:grid-cols-2">
+        <section className="border-t border-rule pt-4">
+          <SectionHead
+            kicker="Diagnose"
+            title={`${insights.length} signals found`}
+            action={
+              <Link href="/insights" className="btn-quiet">
+                Investigate →
+              </Link>
+            }
+          />
+          <ul>
+            {insights.slice(0, 3).map((insight, index) => (
+              <li
+                key={`${insight.activity_type}-${insight.month}`}
+                className="flex items-baseline gap-3 border-b border-rule py-2.5 last:border-b-0"
+              >
+                <span className="fig w-4 shrink-0 text-[10.5px] text-alert">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[12.5px] font-medium leading-snug text-ink">
+                    {insight.headline}
+                  </span>
+                  <span className="mt-0.5 block text-[11.5px] leading-relaxed text-ink-muted">
                     {insight.detail}
-                  </p>
-                </div>
+                  </span>
+                </span>
               </li>
             ))}
             {insights.length === 0 && (
-              <li className="text-xs text-slate-500">No anomalies detected in the current series.</li>
+              <li className="py-2.5 text-[12px] text-ink-muted">
+                No anomalies detected in the current series.
+              </li>
             )}
           </ul>
         </section>
 
-        <section className="card card-pad">
-          <div className="mb-4 flex items-baseline justify-between">
-            <h2 className="text-sm font-semibold text-white">Top recommended actions</h2>
-            <Link href="/actions" className="text-[11px] text-signal-mint hover:underline">
-              Action plan →
-            </Link>
-          </div>
-          <ul className="space-y-3">
+        <section className="border-t border-rule pt-4">
+          <SectionHead
+            kicker="Act"
+            title="Top recommended actions"
+            action={
+              <Link href="/actions" className="btn-quiet">
+                Action plan →
+              </Link>
+            }
+          />
+          <ul>
             {data.recommendations.slice(0, 4).map((recommendation, index) => (
-              <li key={recommendation.id} className="flex items-center gap-3">
-                <span className="metric w-7 shrink-0 text-right text-xs font-semibold text-signal-mint">
+              <li
+                key={recommendation.id}
+                className="flex items-baseline gap-3 border-b border-rule py-2.5 last:border-b-0"
+              >
+                <span className="fig w-4 shrink-0 text-[10.5px] text-ink-faint">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[12.5px] font-medium text-ink">
+                    {recommendation.title}
+                  </span>
+                  <span className="fig mt-0.5 block text-[11.5px] text-ink-muted">
+                    −{formatTonnes(recommendation.carbon_impact_t)} ·{" "}
+                    {formatUsd(recommendation.cost_impact_usd)}/yr · {recommendation.effort} effort ·{" "}
+                    {recommendation.confidence_pct.toFixed(0)}%
+                  </span>
+                </span>
+                <span className="fig shrink-0 text-[12.5px] text-ink">
                   {recommendation.score.toFixed(0)}
                 </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-medium text-slate-200">
-                    {index + 1}. {recommendation.title}
-                  </p>
-                  <p className="text-[11px] text-slate-500">
-                    −{formatTonnes(recommendation.carbon_impact_t)} ·{" "}
-                    {formatUsd(recommendation.cost_impact_usd)}/yr · {recommendation.effort} effort
-                  </p>
-                </div>
               </li>
             ))}
           </ul>
         </section>
       </div>
 
-      <p className="pb-4 text-center text-[11px] text-slate-600">
-        {titleize(data.company.region)} grid factors · GHG Protocol Corporate Standard · estimates
-        carry methodological uncertainty and are labelled as such
-      </p>
+      <div className="mt-8">
+        <Footnote>
+          <b>Method.</b> Measured from {baseline.activity_count} activity records across{" "}
+          {baseline.month_count} months. Every carbon figure is activity data × a cited emission
+          factor, computed by the deterministic engine — the language model selects which analysis
+          to run and explains it, it never produces a number. Grid factor:{" "}
+          {titleize(data.company.region)}. <b>1</b> UK Government GHG Conversion Factors 2026.{" "}
+          <b>2</b> Cloud Carbon Footprint methodology. <b>Uncertainty.</b> Spend-based procurement
+          carries ~60% uncertainty and is the largest line, so each recommendation carries its own
+          confidence. Scenario maths is linear; no rebound effect is modelled.
+        </Footnote>
+      </div>
     </div>
   );
 }
@@ -204,12 +288,14 @@ function Header({
   period?: { start: string; end: string };
 }) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-3">
+    <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 border-b-2 border-ink pb-4">
       <div>
-        <p className="label">Executive dashboard</p>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight text-white">{company}</h1>
+        <p className="kicker">Executive dashboard</p>
+        <h1 className="mt-1.5 font-serif text-[26px] font-semibold leading-none tracking-tight text-ink">
+          {company}
+        </h1>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         {region && <span className="chip">Grid region · {region}</span>}
         {period && (
           <span className="chip">

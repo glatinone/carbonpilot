@@ -38,7 +38,7 @@ export function monthLabel(month: string): string {
 }
 
 export const EFFORT_COLOR: Record<string, string> = {
-  low: "text-signal-mint",
-  medium: "text-signal-amber",
-  high: "text-signal-rose",
+  low: "text-save",
+  medium: "text-alert",
+  high: "text-stop",
 };

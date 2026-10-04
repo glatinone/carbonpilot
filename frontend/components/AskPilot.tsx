@@ -11,6 +11,12 @@ const SUGGESTIONS = [
   "Where are our biggest emissions?",
 ];
 
+/**
+ * A command surface, not a chat bubble. The question box is a prompt line and the
+ * answer is reported with its working shown — the tool trace is the evidence that
+ * the number came from the engine, so it is set as a numbered audit list rather
+ * than tucked into a grey panel the eye skips.
+ */
 export function AskPilot() {
   const [message, setMessage] = useState("");
   const [response, setResponse] = useState<ChatResponse | null>(null);
@@ -33,20 +39,18 @@ export function AskPilot() {
   }
 
   return (
-    <section className="card overflow-hidden">
-      <div className="flex items-center justify-between border-b border-ink-700/60 px-5 py-3">
-        <div className="flex items-center gap-2">
-          <span className="grid h-5 w-5 place-items-center rounded bg-signal-sky/15 text-[11px] text-signal-sky">
-            ✦
-          </span>
-          <h2 className="text-sm font-semibold text-white">Ask CarbonPilot</h2>
+    <section className="border-y border-rule bg-paper-panel">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-rule px-5 py-2.5">
+        <div className="flex items-baseline gap-3">
+          <span className="kicker">Command</span>
+          <h2 className="font-serif text-[15px] font-semibold tracking-tight text-ink">
+            Ask CarbonPilot
+          </h2>
         </div>
         {response && (
           <span
             className={`chip ${
-              response.mode === "gemini"
-                ? "border-signal-mint/40 text-signal-mint"
-                : "border-signal-amber/40 text-signal-amber"
+              response.mode === "gemini" ? "border-save/50 text-save" : "border-alert/50 text-alert"
             }`}
           >
             {response.mode === "gemini" ? `Gemini · ${response.model}` : "Deterministic engine"}
@@ -54,7 +58,7 @@ export function AskPilot() {
         )}
       </div>
 
-      <div className="card-pad space-y-4">
+      <div className="px-5 py-4">
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -75,7 +79,7 @@ export function AskPilot() {
         </form>
 
         {!response && !loading && (
-          <div className="flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
             {SUGGESTIONS.map((suggestion) => (
               <button
                 key={suggestion}
@@ -84,7 +88,7 @@ export function AskPilot() {
                   setMessage(suggestion);
                   void ask(suggestion);
                 }}
-                className="chip hover:border-signal-mint/40 hover:text-white"
+                className="btn-quiet text-left"
               >
                 {suggestion}
               </button>
@@ -93,51 +97,53 @@ export function AskPilot() {
         )}
 
         {loading && (
-          <div className="space-y-2">
-            <div className="h-3 w-2/3 animate-pulse rounded bg-ink-800" />
-            <div className="h-3 w-5/6 animate-pulse rounded bg-ink-800" />
-            <p className="pt-1 text-xs text-slate-500">
-              Interpreting the question → selecting tools → running the calculation engine…
+          <div className="mt-4">
+            <div className="h-2 w-2/3 animate-pulse bg-rule/60" />
+            <div className="mt-2 h-2 w-5/6 animate-pulse bg-rule/60" />
+            <p className="kicker mt-3">
+              Interpreting the question → selecting tools → running the calculation engine
             </p>
           </div>
         )}
 
         {error && (
-          <p className="rounded-lg border border-signal-rose/30 bg-signal-rose/10 px-3 py-2 text-xs text-signal-rose">
+          <p className="mt-4 border-l-2 border-l-stop border-y border-r border-rule px-3 py-2 text-[12px] text-stop">
             {error}
           </p>
         )}
 
         {response && (
-          <div className="space-y-4">
-            <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-slate-200">
+          <div className="mt-4">
+            <p className="whitespace-pre-wrap text-[13.5px] leading-[1.8] text-ink">
               {response.answer}
             </p>
 
             {response.tool_calls.length > 0 && (
-              <div className="rounded-lg border border-ink-700/60 bg-ink-950/50 p-3">
-                <p className="label mb-2">Tool calls — the numbers came from here</p>
+              <div className="mt-5 border-t border-rule pt-3">
+                <p className="kicker mb-2.5">How the numbers were made</p>
                 <ol className="space-y-1.5">
                   {response.tool_calls.map((call, index) => (
-                    <li key={`${call.tool}-${index}`} className="flex gap-2 text-[11px]">
-                      <span className="metric shrink-0 text-slate-600">{index + 1}.</span>
-                      <span className="font-mono text-signal-sky">{call.tool}</span>
-                      <span className="truncate text-slate-500">{call.summary}</span>
+                    <li key={`${call.tool}-${index}`} className="flex items-baseline gap-3 text-[11.5px]">
+                      <span className="fig w-4 shrink-0 text-ink-faint">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <span className="fig shrink-0 text-ink">{call.tool}</span>
+                      <span className="truncate text-ink-muted">{call.summary}</span>
                     </li>
                   ))}
                 </ol>
               </div>
             )}
-
-            {response.grounded && (
-              <p className="text-[11px] text-slate-500">
-                Grounded: the model selected and explained the analysis; the calculation engine
-                produced every number.
-              </p>
-            )}
           </div>
         )}
       </div>
+
+      {response?.grounded && (
+        <div className="footnote">
+          <b>Grounded.</b> The model selected and explained the analysis; the calculation engine
+          produced every number.
+        </div>
+      )}
     </section>
   );
 }

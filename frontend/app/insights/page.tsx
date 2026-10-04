@@ -2,7 +2,7 @@
 
 import { AskPilot } from "@/components/AskPilot";
 import { InsightCard } from "@/components/InsightCard";
-import { ErrorBanner, EmptyState, Skeleton } from "@/components/ui";
+import { EmptyState, ErrorBanner, Footnote, SectionHead, Skeleton } from "@/components/ui";
 import { useDashboard } from "@/lib/hooks";
 import { formatPct, titleize } from "@/lib/format";
 
@@ -32,13 +32,19 @@ export default function InsightsPage() {
   const anomalies = data.anomalies.filter((a) => a.activity_type !== "all");
 
   return (
-    <div className="space-y-6">
+    <div>
       <Header count={anomalies.length} />
 
-      <AskPilot />
+      <div className="mt-8">
+        <AskPilot />
+      </div>
 
-      <section className="space-y-4">
-        <h2 className="text-sm font-semibold text-white">Decision-ready signals</h2>
+      <section className="mt-8 border-t border-rule pt-4">
+        <SectionHead
+          kicker="Signals"
+          title="Decision-ready"
+          note={`${data.insights.length} of ${anomalies.length} anomalies ranked for action`}
+        />
         {data.insights.length === 0 ? (
           <EmptyState
             title="No anomalies in the current series"
@@ -55,61 +61,46 @@ export default function InsightsPage() {
         )}
       </section>
 
-      <section className="card card-pad">
-        <h2 className="mb-4 text-sm font-semibold text-white">All detected anomalies</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-ink-700/60 text-[10px] uppercase tracking-wider text-slate-500">
-                <th className="pb-2 pr-4 font-medium">Month</th>
-                <th className="pb-2 pr-4 font-medium">Activity stream</th>
-                <th className="pb-2 pr-4 text-right font-medium">Change</th>
-                <th className="pb-2 pr-4 text-right font-medium">Z-score</th>
-                <th className="pb-2 pr-4 text-right font-medium">Delta</th>
-                <th className="pb-2 font-medium">Severity</th>
+      <section className="mt-8 border-t border-rule pt-4">
+        <SectionHead kicker="Record" title="All detected anomalies" note="per activity stream" />
+        <table className="ledger">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Activity stream</th>
+              <th>Change</th>
+              <th>Z-score</th>
+              <th>Delta tCO₂e</th>
+              <th>Severity</th>
+            </tr>
+          </thead>
+          <tbody>
+            {anomalies.map((anomaly) => (
+              <tr key={`${anomaly.month}-${anomaly.activity_type}`}>
+                <td>{anomaly.month}</td>
+                <td>{titleize(anomaly.activity_type)}</td>
+                <td className={anomaly.change_pct > 0 ? "text-alert" : "text-save"}>
+                  {formatPct(anomaly.change_pct)}
+                </td>
+                <td>{anomaly.z_score.toFixed(2)}</td>
+                <td>{anomaly.delta_tco2e.toFixed(1)}</td>
+                <td className={anomaly.severity === "high" ? "text-stop" : "text-alert"}>
+                  {anomaly.severity}
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-ink-800/80">
-              {anomalies.map((anomaly) => (
-                <tr key={`${anomaly.month}-${anomaly.activity_type}`}>
-                  <td className="py-2.5 pr-4 font-mono text-slate-400">{anomaly.month}</td>
-                  <td className="py-2.5 pr-4 text-slate-300">
-                    {titleize(anomaly.activity_type)}
-                  </td>
-                  <td
-                    className={`py-2.5 pr-4 text-right font-mono ${
-                      anomaly.change_pct > 0 ? "text-signal-rose" : "text-signal-mint"
-                    }`}
-                  >
-                    {formatPct(anomaly.change_pct)}
-                  </td>
-                  <td className="py-2.5 pr-4 text-right font-mono text-slate-400">
-                    {anomaly.z_score.toFixed(2)}
-                  </td>
-                  <td className="py-2.5 pr-4 text-right font-mono text-slate-400">
-                    {anomaly.delta_tco2e.toFixed(1)} t
-                  </td>
-                  <td className="py-2.5">
-                    <span
-                      className={`chip ${
-                        anomaly.severity === "high"
-                          ? "border-signal-rose/40 text-signal-rose"
-                          : "border-signal-amber/40 text-signal-amber"
-                      }`}
-                    >
-                      {anomaly.severity}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            ))}
+          </tbody>
+        </table>
+
+        <div className="mt-5">
+          <Footnote>
+            <b>Method.</b> Robust z-score using median and median absolute deviation (MAD), computed
+            per activity stream so a spike cannot inflate its own baseline — a company-level event is
+            only reported when the total moved by at least 10%. Signals are ranked by carbon × cost ×
+            effort weighted by confidence. <b>Uncertainty.</b> Detected, not forecast: every figure is
+            a measured change against that stream&rsquo;s own history.
+          </Footnote>
         </div>
-        <p className="mt-4 text-[11px] leading-relaxed text-slate-500">
-          Method: robust z-score using median and median absolute deviation (MAD), computed per
-          activity stream so a spike cannot inflate its own baseline. A company-level event is only
-          reported when the total moved by at least 10%.
-        </p>
       </section>
     </div>
   );
@@ -117,15 +108,18 @@ export default function InsightsPage() {
 
 function Header({ count }: { count?: number }) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-3">
+    <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b-2 border-ink pb-4">
       <div>
-        <p className="label">Diagnose</p>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight text-white">AI Insights</h1>
+        <p className="kicker">Diagnose</p>
+        <h1 className="mt-1.5 font-serif text-[26px] font-semibold leading-none tracking-tight text-ink">
+          AI Insights
+        </h1>
       </div>
       {count !== undefined && (
-        <span className="chip">
-          {count} anomal{count === 1 ? "y" : "ies"} in the recorded series
-        </span>
+        <p className="max-w-[46ch] font-serif text-[15px] leading-snug text-ink-soft">
+          <b className="font-semibold text-ink">{count}</b> anomal{count === 1 ? "y" : "ies"} in the
+          recorded series
+        </p>
       )}
     </header>
   );

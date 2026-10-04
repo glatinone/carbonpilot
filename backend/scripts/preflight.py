@@ -1,9 +1,10 @@
 """Pre-presentation preflight for the CarbonPilot demo.
 
 Run this immediately before walking on stage. It exercises the exact surface the
-judges will see — every API route behind the four pages, the constraint search,
-and one real agent question — and fails loudly rather than letting a dead
-endpoint, an exhausted LLM key, or a 30-second stall be discovered mid-demo.
+judges will see — every page of the UI, every API route behind them, the upload
+mapping, the constraint search, and one real agent question — and fails loudly
+rather than letting a dead frontend, a broken endpoint, an exhausted LLM key, or
+a 30-second stall be discovered mid-demo.
 
 Read-only against the running API except for ``--reset``, which re-seeds the
 synthetic dataset from scratch.
@@ -40,6 +41,10 @@ SAMPLE_CSV = (
 
 # A constraint search slower than this is dead air the audience will feel.
 SLOW_SEARCH_SECONDS = 5.0
+
+# The pages the demo walks through, in script order.
+DEFAULT_UI_URL = "http://localhost:3000"
+UI_ROUTES = ["/", "/upload/", "/insights/", "/simulator/", "/actions/"]
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
@@ -110,8 +115,50 @@ def _reset_demo_data() -> Result:
     return Result("reset demo data", OK, "re-seeded")
 
 
-def build_checks(base: str) -> list[Result]:
+def _probe_pages(target: str) -> list[str]:
+    """Routes that do not answer 200 at ``target``. Empty list means all serve.
+
+    Separated from the check so the failure path can be exercised directly —
+    otherwise it only ever runs on the one day the demo is already broken.
+    """
+    broken: list[str] = []
+    for route in UI_ROUTES:
+        try:
+            with urllib.request.urlopen(f"{target}{route}", timeout=30) as response:
+                if response.status != 200:
+                    broken.append(f"{route} → {response.status}")
+        except urllib.error.HTTPError as exc:
+            broken.append(f"{route} → {exc.code}")
+        except Exception:  # noqa: BLE001 - unreachable is the finding
+            broken.append(f"{route} → unreachable")
+    return broken
+
+
+def build_checks(base: str, ui_url: str | None) -> list[Result]:
     results: list[Result] = []
+
+    def ui_pages() -> Result:
+        """Verify every page the script visits actually serves.
+
+        A dead or broken frontend is the most visible failure on stage and the
+        API checks cannot see it. In single-port mode the API serves the UI, so
+        the same base URL is probed; otherwise the dev server is.
+        """
+        _, health = _get(base, "/api/health")
+        target = base if health.get("ui_served") else ui_url
+        if not target:
+            return Result("ui / pages", WARN, "no --ui-url given, skipped")
+
+        broken = _probe_pages(target)
+        if broken:
+            return Result(
+                "ui / pages",
+                FAIL,
+                f"{len(broken)}/{len(UI_ROUTES)} not serving from {target}: "
+                + ", ".join(broken)
+                + "  (is the frontend running? `cd frontend && npm run dev`)",
+            )
+        return Result("ui / pages", OK, f"all {len(UI_ROUTES)} pages serve from {target}")
 
     def health() -> Result:
         _, data = _get(base, "/api/health")
@@ -218,6 +265,7 @@ def build_checks(base: str) -> list[Result]:
             f"mode={data.get('mode')} tools={tools} in {elapsed:.1f}s",
         )
 
+    _check(results, "ui / pages", ui_pages)
     _check(results, "health / LLM", health)
     _check(results, "health / UI", ui)
     _check(results, "dashboard", dashboard)
@@ -243,17 +291,24 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Pre-presentation preflight for CarbonPilot.")
     parser.add_argument("--base-url", default="http://127.0.0.1:8008", help="API base URL.")
     parser.add_argument(
+        "--ui-url",
+        default=DEFAULT_UI_URL,
+        help="Where the frontend is served in dev mode (ignored when the API serves the UI).",
+    )
+    parser.add_argument(
         "--reset", action="store_true", help="Re-seed the demo dataset before checking."
     )
     args = parser.parse_args()
     base = args.base_url.rstrip("/")
+    ui_url = args.ui_url.rstrip("/") if args.ui_url else None
 
-    print(f"CarbonPilot preflight — {base}\n")
+    print(f"CarbonPilot preflight — api {base}" + (f", ui {ui_url}" if ui_url else ""))
+    print()
     results: list[Result] = []
     if args.reset:
         _check(results, "reset demo data", _reset_demo_data)
 
-    results.extend(build_checks(base))
+    results.extend(build_checks(base, ui_url))
 
     failed = 0
     for result in results:

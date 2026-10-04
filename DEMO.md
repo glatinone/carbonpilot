@@ -113,8 +113,9 @@ Click **Create Action**, assign the owner.
 
 ## Rehearsal checklist
 
-Run the preflight first — it exercises every route behind the five pages, the constraint search
-and one real agent question, and fails on anything that would break on stage:
+Run the preflight first — it checks that all five pages actually serve, then exercises every API
+route behind them, the upload mapping, the constraint search and one real agent question, failing
+on anything that would break on stage:
 
 ```bash
 cd backend && ./.venv/Scripts/python.exe scripts/preflight.py --reset

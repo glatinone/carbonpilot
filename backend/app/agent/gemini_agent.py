@@ -34,6 +34,23 @@ def resolved_model() -> str | None:
     """Last model id the agent actually called, or None before the first call."""
     return _RESOLVED_MODEL
 
+
+# Why the most recent model call failed.
+#
+# The agent already degrades gracefully: when the model call raises, it answers
+# from the deterministic router and prepends a note to the answer. That fallback is
+# correct behaviour, and it is also why a broken key can go unnoticed for a whole
+# deployment — the numbers are still right, they simply stopped being explained by
+# the model. Recording the reason turns an invisible degradation into a reported
+# one: /api/health surfaces it, and preflight fails on it.
+_LAST_ERROR: str | None = None
+
+
+def last_error() -> str | None:
+    """Reason the most recent model call failed, or None if it succeeded."""
+    return _LAST_ERROR
+
+
 SYSTEM_INSTRUCTION = """You are CarbonPilot, a carbon decision engine for sustainability and operations managers.
 
 RULES (non-negotiable):
@@ -423,15 +440,21 @@ def _offline_chat(db: Session, company_id: int, message: str) -> dict:
 # --------------------------------------------------------------------------- #
 
 def chat(db: Session, company_id: int, message: str) -> dict:
+    global _LAST_ERROR
     settings = get_settings()
     if not settings.llm_enabled:
         return _offline_chat(db, company_id, message)
     try:
-        return _gemini_chat(db, company_id, message)
+        result = _gemini_chat(db, company_id, message)
     except Exception as exc:  # noqa: BLE001 - degrade instead of 500
+        # Truncated on purpose: a provider error is often a wall of JSON, and this
+        # value is surfaced in /api/health where a wall would be unreadable.
+        _LAST_ERROR = f"{type(exc).__name__}: {exc}"[:300]
         fallback = _offline_chat(db, company_id, message)
         fallback["answer"] = (
             f"Gemini call failed ({type(exc).__name__}: {exc}). "
             "Falling back to the deterministic engine.\n\n" + fallback["answer"]
         )
         return fallback
+    _LAST_ERROR = None
+    return result

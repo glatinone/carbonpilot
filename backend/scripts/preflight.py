@@ -274,6 +274,20 @@ def build_checks(base: str, ui_url: str | None) -> list[Result]:
                 FAIL,
                 "answered with no tool call — the number would not be grounded",
             )
+        # A configured key is not a working key. The agent answers from the
+        # deterministic router when the model call fails, and that answer still
+        # carries tool calls and correct numbers — so checking tool calls alone
+        # passes on a deployment whose AI is dead. This is the check that would
+        # have caught it.
+        _, health_data = _get(base, "/api/health")
+        if health_data.get("llm_mode") == "gemini" and data.get("mode") != "gemini":
+            return Result(
+                "agent (Ask panel)",
+                FAIL,
+                "a key is configured but the model call failed, so this answer came from the "
+                "deterministic router while the UI claims Gemini. Reason: "
+                f"{health_data.get('llm_last_error') or 'not reported'}",
+            )
         if not str(data.get("answer", "")).strip():
             return Result("agent (Ask panel)", FAIL, "empty answer")
         return Result(

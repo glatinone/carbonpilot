@@ -91,6 +91,7 @@ def health() -> dict:
         "llm_model": settings.gemini_model if settings.llm_enabled else None,
         "llm_mode": "gemini" if settings.llm_enabled else "offline",
         "llm_model_resolved": gemini_agent.resolved_model(),
+        "llm_last_error": gemini_agent.last_error(),
         "climatiq_enabled": settings.climatiq_enabled,
         "database": settings.database_url.split("://", 1)[0],
         "ui_served": UI_DIR.exists(),

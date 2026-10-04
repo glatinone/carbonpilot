@@ -158,3 +158,41 @@ export type IngestResult = {
   skipped: Array<Record<string, unknown>>;
   mapping: Record<string, string>;
 };
+
+/**
+ * Grid benchmarks are a comparison layer, not the inventory factor library.
+ * `basis` travels with every payload on purpose: Ember publishes full-lifecycle
+ * CO2e intensity, which is NOT interchangeable with the generation-boundary
+ * factor a location-based Scope 2 figure must use. The UI is expected to say so.
+ */
+export type JapacGridRow = {
+  iso3: string;
+  country: string;
+  intensity: number;
+  year: number;
+  rank: number;
+  shares_pct: Record<string, number | null>;
+  delta_pct_vs_home: number;
+  counterfactual_tco2e: number;
+  counterfactual_delta_tco2e: number;
+};
+
+export type JapacBenchmark = {
+  basis: string;
+  unit: string;
+  source: string;
+  retrieved_via: string;
+  licence: string;
+  boundary_note: string;
+  home: {
+    iso3: string;
+    country: string;
+    intensity: number;
+    year: number;
+    rank: number;
+    of: number;
+    shares_pct: Record<string, number | null>;
+  };
+  measured: { electricity_kwh: number; tco2e: number };
+  countries: JapacGridRow[];
+};

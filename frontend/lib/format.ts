@@ -31,10 +31,13 @@ export function titleize(value: string): string {
   return value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export function monthLabel(month: string): string {
+export function monthLabel(month: string, locale: "en" | "id" = "en"): string {
   const [year, m] = month.split("-");
   const date = new Date(Number(year), Number(m) - 1, 1);
-  return date.toLocaleString("en-US", { month: "short", year: "2-digit" });
+  return date.toLocaleString(locale === "id" ? "id-ID" : "en-US", {
+    month: "short",
+    year: "2-digit",
+  });
 }
 
 export const EFFORT_COLOR: Record<string, string> = {

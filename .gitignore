@@ -15,6 +15,12 @@ backend/demo_data/
 # --- Secrets ---
 .env
 *.env.local
+.env*.local
+# NOTE: frontend/.env.development and frontend/.env.production ARE tracked on
+# purpose — they hold only NEXT_PUBLIC_API_URL, which is compiled into the public
+# client bundle and can never be a secret. Never put a real credential in a
+# NEXT_PUBLIC_* variable: it ships to every visitor's browser and it is readable
+# in this repository.
 
 # --- Node / Next ---
 node_modules/

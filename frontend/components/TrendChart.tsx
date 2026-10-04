@@ -11,6 +11,8 @@ import {
   YAxis,
 } from "recharts";
 import type { SeriesPoint } from "@/lib/types";
+import { useLocale } from "@/lib/i18n";
+import { Emphasised } from "@/components/ui";
 import { monthLabel } from "@/lib/format";
 
 type Props = {
@@ -25,6 +27,7 @@ type Props = {
  * reading is meant to come from the figures, not the ink.
  */
 export function TrendChart({ series, highlightMonth, compareSeries }: Props) {
+  const { t, locale } = useLocale();
   const data = series.map((point) => {
     const compare = compareSeries?.find((other) => other.month === point.month);
     return {
@@ -67,8 +70,8 @@ export function TrendChart({ series, highlightMonth, compareSeries }: Props) {
               }}
               labelStyle={{ color: "#6d6d63", fontSize: 10, textTransform: "uppercase" }}
               formatter={(value: number, name: string) => [
-                `${value.toLocaleString("en-US", { maximumFractionDigits: 1 })} tCO₂e`,
-                name === "tco2e" ? "Recorded" : "Projected",
+                `${value.toLocaleString(locale === "id" ? "id-ID" : "en-US", { maximumFractionDigits: 1 })} tCO₂e`,
+                name === "tco2e" ? t("chart.recorded") : t("chart.projected"),
               ]}
             />
             <Area
@@ -111,8 +114,11 @@ export function TrendChart({ series, highlightMonth, compareSeries }: Props) {
 
       {highlightMonth && (
         <p className="mt-2 text-[11px] text-ink-muted">
-          Flagged: <span className="fig text-alert">{monthLabel(highlightMonth)}</span> · anomaly
-          detected on the monthly series
+          <Emphasised
+            template={t("chart.flagged")}
+            values={{ month: monthLabel(highlightMonth, locale) }}
+            tone="alert"
+          />
         </p>
       )}
     </div>

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { api } from "@/lib/api";
 import type { Recommendation } from "@/lib/types";
-import { EFFORT_COLOR, formatTonnes, formatUsd, titleize } from "@/lib/format";
+import { useLocale, useStreamLabel } from "@/lib/i18n";
+import { EFFORT_COLOR, formatTonnes, formatUsd } from "@/lib/format";
 
 const OWNERS = ["Engineering", "Facilities", "Procurement", "Travel & Ops", "Finance"];
 
@@ -21,6 +22,8 @@ export function RecommendationCard({
   rank: number;
   onCreated?: () => void;
 }) {
+  const { t } = useLocale();
+  const streamLabel = useStreamLabel();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [owner, setOwner] = useState(OWNERS[0]);
@@ -47,11 +50,13 @@ export function RecommendationCard({
     <article className="border-b border-rule">
       <div className="flex flex-col gap-3 py-4 md:flex-row md:items-start md:gap-6">
         <div className="flex shrink-0 items-baseline gap-3 md:w-20 md:flex-col md:gap-0.5">
-          <p className="fig text-[10px] text-ink-faint">RANK {String(rank).padStart(2, "0")}</p>
+          <p className="fig text-[10px] text-ink-faint">
+            {t("rec.rank", { n: String(rank).padStart(2, "0") })}
+          </p>
           <p className="fig text-[19px] font-medium leading-none text-ink">
             {recommendation.score.toFixed(0)}
           </p>
-          <p className="text-[10px] text-ink-faint md:mt-0.5">weighted score</p>
+          <p className="text-[10px] text-ink-faint md:mt-0.5">{t("rec.score")}</p>
         </div>
 
         <div className="min-w-0 flex-1">
@@ -63,17 +68,17 @@ export function RecommendationCard({
           <div className="mt-2.5 flex flex-wrap items-baseline gap-x-5 gap-y-1.5">
             <span className="fig text-[13px] text-save">
               −{formatTonnes(recommendation.carbon_impact_t)}
-              <span className="ml-1 text-[10px] text-ink-faint">/yr</span>
+              <span className="ml-1 text-[10px] text-ink-faint">{t("rec.perYear")}</span>
             </span>
             <span className="fig text-[13px] text-ink">
               {formatUsd(recommendation.cost_impact_usd)}
-              <span className="ml-1 text-[10px] text-ink-faint">/yr</span>
+              <span className="ml-1 text-[10px] text-ink-faint">{t("rec.perYear")}</span>
             </span>
             <span className={`text-[11px] ${EFFORT_COLOR[recommendation.effort]}`}>
-              {recommendation.effort} effort
+              {t(`effort.${recommendation.effort}`)}
             </span>
             <span className="fig text-[11px] text-ink-muted">
-              {recommendation.confidence_pct.toFixed(0)}% confidence
+              {t("rec.confidence", { pct: recommendation.confidence_pct.toFixed(0) })}
             </span>
           </div>
         </div>
@@ -94,11 +99,11 @@ export function RecommendationCard({
           onClick={() => void createAction()}
           disabled={busy || created}
         >
-          {created ? "Action created ✓" : busy ? "Creating…" : "Create Action"}
+          {created ? t("rec.created") : busy ? t("rec.creating") : t("rec.create")}
         </button>
 
         <button type="button" className="btn-quiet ml-auto" onClick={() => setOpen((value) => !value)}>
-          {open ? "Hide evidence" : "Why this ranks here"}
+          {open ? t("rec.hideEvidence") : t("rec.why")}
         </button>
       </div>
 
@@ -109,17 +114,20 @@ export function RecommendationCard({
       {open && (
         <div className="border-t border-rule bg-paper-band/60 px-4 py-4">
           <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-[11.5px] sm:grid-cols-3">
-            <Evidence label="Activity stream" value={titleize(recommendation.activity_type)} />
-            <Evidence label="Share of footprint" value={`${evidence.share_of_footprint_pct ?? "—"}%`} />
-            <Evidence label="Baseline" value={`${evidence.baseline_tco2e ?? "—"} tCO₂e`} />
-            <Evidence label="Method" value={String(evidence.method ?? "—")} />
-            <Evidence label="Unit" value={String(evidence.unit ?? "—")} />
-            <Evidence label="Basis" value="GHG Protocol" />
+            <Evidence label={t("rec.stream")} value={streamLabel(recommendation.activity_type)} />
+            <Evidence
+              label={t("rec.share")}
+              value={`${evidence.share_of_footprint_pct ?? "—"}%`}
+            />
+            <Evidence label={t("rec.baseline")} value={`${evidence.baseline_tco2e ?? "—"} tCO₂e`} />
+            <Evidence label={t("rec.method")} value={String(evidence.method ?? "—")} />
+            <Evidence label={t("rec.unit")} value={String(evidence.unit ?? "—")} />
+            <Evidence label={t("rec.basis")} value="GHG Protocol" />
           </dl>
 
           {Array.isArray(evidence.assumptions) && (
             <div className="mt-4 border-t border-rule pt-3">
-              <p className="kicker mb-2">Assumptions</p>
+              <p className="kicker mb-2">{t("rec.assumptions")}</p>
               <ul className="space-y-1">
                 {(evidence.assumptions as string[]).map((assumption) => (
                   <li key={assumption} className="text-[11.5px] leading-relaxed text-ink-muted">
@@ -132,7 +140,7 @@ export function RecommendationCard({
 
           {Array.isArray(evidence.driver) && evidence.driver.length > 0 && (
             <div className="mt-4 border-t border-rule pt-3">
-              <p className="kicker mb-2">Attributed driver</p>
+              <p className="kicker mb-2">{t("rec.driver")}</p>
               {(evidence.driver as Array<{ description: string }>).map((driver) => (
                 <p key={driver.description} className="text-[11.5px] text-ink-muted">
                   {driver.description}

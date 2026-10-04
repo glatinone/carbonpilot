@@ -3,13 +3,11 @@
 import { useState } from "react";
 import { api } from "@/lib/api";
 import type { ChatResponse } from "@/lib/types";
+import { useLocale } from "@/lib/i18n";
 
-const SUGGESTIONS = [
-  "Why did our emissions increase in May 2026?",
-  "Reduce our carbon footprint by 15% without increasing costs.",
-  "What should we do next?",
-  "Where are our biggest emissions?",
-];
+// Keys, not strings: module scope cannot reach the locale hook, so the questions
+// are resolved through t() at render time.
+const SUGGESTION_KEYS = ["ask.q1", "ask.q2", "ask.q3", "ask.q4"];
 
 /**
  * A command surface, not a chat bubble. The question box is a prompt line and the
@@ -18,6 +16,7 @@ const SUGGESTIONS = [
  * than tucked into a grey panel the eye skips.
  */
 export function AskPilot() {
+  const { t } = useLocale();
   const [message, setMessage] = useState("");
   const [response, setResponse] = useState<ChatResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -42,9 +41,9 @@ export function AskPilot() {
     <section className="border-y border-rule bg-paper-panel">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-rule px-5 py-2.5">
         <div className="flex items-baseline gap-3">
-          <span className="kicker">Command</span>
+          <span className="kicker">{t("ask.band")}</span>
           <h2 className="font-serif text-[15px] font-semibold tracking-tight text-ink">
-            Ask CarbonPilot
+            {t("ask.title")}
           </h2>
         </div>
         {response && (
@@ -53,7 +52,9 @@ export function AskPilot() {
               response.mode === "gemini" ? "border-save/50 text-save" : "border-alert/50 text-alert"
             }`}
           >
-            {response.mode === "gemini" ? `Gemini · ${response.model}` : "Deterministic engine"}
+            {response.mode === "gemini"
+              ? t("ask.gemini", { model: response.model ?? "" })
+              : t("ask.engine")}
           </span>
         )}
       </div>
@@ -68,31 +69,34 @@ export function AskPilot() {
         >
           <input
             className="input"
-            placeholder="e.g. How can I cut 15% of emissions without raising cost?"
+            placeholder={t("ask.placeholder")}
             value={message}
             onChange={(event) => setMessage(event.target.value)}
             disabled={loading}
           />
           <button type="submit" className="btn-primary shrink-0" disabled={loading || !message.trim()}>
-            {loading ? "Analysing…" : "Analyse"}
+            {loading ? t("ask.analysing") : t("ask.analyse")}
           </button>
         </form>
 
         {!response && !loading && (
           <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
-            {SUGGESTIONS.map((suggestion) => (
-              <button
-                key={suggestion}
-                type="button"
-                onClick={() => {
-                  setMessage(suggestion);
-                  void ask(suggestion);
-                }}
-                className="btn-quiet text-left"
-              >
-                {suggestion}
-              </button>
-            ))}
+            {SUGGESTION_KEYS.map((key) => {
+              const suggestion = t(key);
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => {
+                    setMessage(suggestion);
+                    void ask(suggestion);
+                  }}
+                  className="btn-quiet text-left"
+                >
+                  {suggestion}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -100,9 +104,7 @@ export function AskPilot() {
           <div className="mt-4">
             <div className="h-2 w-2/3 animate-pulse bg-rule/60" />
             <div className="mt-2 h-2 w-5/6 animate-pulse bg-rule/60" />
-            <p className="kicker mt-3">
-              Interpreting the question → selecting tools → running the calculation engine
-            </p>
+            <p className="kicker mt-3">{t("ask.working")}</p>
           </div>
         )}
 
@@ -120,7 +122,7 @@ export function AskPilot() {
 
             {response.tool_calls.length > 0 && (
               <div className="mt-5 border-t border-rule pt-3">
-                <p className="kicker mb-2.5">How the numbers were made</p>
+                <p className="kicker mb-2.5">{t("ask.trace")}</p>
                 <ol className="space-y-1.5">
                   {response.tool_calls.map((call, index) => (
                     <li key={`${call.tool}-${index}`} className="flex items-baseline gap-3 text-[11.5px]">
@@ -138,12 +140,7 @@ export function AskPilot() {
         )}
       </div>
 
-      {response?.grounded && (
-        <div className="footnote">
-          <b>Grounded.</b> The model selected and explained the analysis; the calculation engine
-          produced every number.
-        </div>
-      )}
+      {response?.grounded && <div className="footnote">{t("ask.grounded")}</div>}
     </section>
   );
 }

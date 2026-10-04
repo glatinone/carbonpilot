@@ -5,6 +5,7 @@ import type {
   Dashboard,
   IngestResult,
   Intervention,
+  JapacBenchmark,
   MappingPreview,
   Recommendation,
   ScenarioResult,
@@ -80,6 +81,11 @@ export const api = {
     }),
 
   dashboard: (companyId = 1) => request<Dashboard>(`/api/dashboard?company_id=${companyId}`),
+
+  // Grid benchmarks are a comparison layer, not the inventory factor library, so
+  // the payload carries its own basis and licence and the UI is expected to show
+  // them rather than silently reuse the numbers.
+  japac: (companyId = 1) => request<JapacBenchmark>(`/api/japac?company_id=${companyId}`),
 
   interventions: (companyId = 1) =>
     request<{ count: number; interventions: Intervention[] }>(

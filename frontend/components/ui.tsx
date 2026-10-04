@@ -1,4 +1,7 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { useLocale } from "@/lib/i18n";
 
 const TONE = {
   ink: "text-ink",
@@ -75,19 +78,20 @@ export function Skeleton({ className = "h-24" }: { className?: string }) {
 }
 
 export function ErrorBanner({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  const { t } = useLocale();
   return (
     <div className="border-l-2 border-l-stop border-y border-r border-rule bg-paper-panel px-4 py-3">
-      <p className="text-[13px] font-medium text-stop">Could not reach the API</p>
+      <p className="text-[13px] font-medium text-stop">{t("error.title")}</p>
       <p className="mt-1 text-[12px] text-ink-muted">{message}</p>
       <p className="mt-1.5 text-[12px] text-ink-muted">
-        Start the backend with{" "}
+        {t("error.startWith")}{" "}
         <code className="fig border border-rule-strong bg-paper px-1.5 py-0.5 text-[11px] text-ink-soft">
           python -m uvicorn app.main:app --port 8008
         </code>
       </p>
       {onRetry && (
         <button type="button" onClick={onRetry} className="btn-ghost mt-3">
-          Retry
+          {t("error.retry")}
         </button>
       )}
     </div>
@@ -97,4 +101,40 @@ export function ErrorBanner({ message, onRetry }: { message: string; onRetry?: (
 /** Provenance strip. The product's differentiator, so it gets a component, not a footnote *string*. */
 export function Footnote({ children }: { children: ReactNode }) {
   return <div className="footnote">{children}</div>;
+}
+
+/**
+ * Renders a translated sentence with every `{placeholder}` emphasised.
+ *
+ * Composing "Nusantara moved +165% in May" by concatenating JSX fragments cannot be
+ * translated: word order differs per language and the emphasis would land on the
+ * wrong words. Keeping the whole sentence in the dictionary as a template with
+ * placeholders, and bolding the substitutions here, lets each language own its own
+ * grammar while the emphasis survives.
+ */
+export function Emphasised({
+  template,
+  values,
+  tone = "ink",
+}: {
+  template: string;
+  values: Record<string, string>;
+  tone?: "ink" | "alert";
+}) {
+  return (
+    <>
+      {template.split(/(\{\w+\})/g).map((part, index) => {
+        const match = part.match(/^\{(\w+)\}$/);
+        if (!match) return <span key={index}>{part}</span>;
+        return (
+          <b
+            key={index}
+            className={tone === "alert" ? "font-semibold text-alert" : "font-semibold text-ink"}
+          >
+            {values[match[1]] ?? part}
+          </b>
+        );
+      })}
+    </>
+  );
 }

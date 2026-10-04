@@ -44,7 +44,7 @@ SLOW_SEARCH_SECONDS = 5.0
 
 # The pages the demo walks through, in script order.
 DEFAULT_UI_URL = "http://localhost:3000"
-UI_ROUTES = ["/", "/upload/", "/insights/", "/simulator/", "/actions/"]
+UI_ROUTES = ["/", "/upload/", "/insights/", "/simulator/", "/actions/", "/japac/"]
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
@@ -282,6 +282,37 @@ def build_checks(base: str, ui_url: str | None) -> list[Result]:
             f"mode={data.get('mode')} tools={tools} in {elapsed:.1f}s",
         )
 
+    def grid_benchmarks() -> Result:
+        """The JAPAC comparison is the one surface whose numbers come from a
+        different methodology to the inventory. Verify it serves, is ordered, and
+        still declares its boundary — a benchmark page that silently drops its
+        basis is the failure worth catching, because it would present lifecycle
+        comparison numbers as if they were the reported Scope 2 factors.
+        """
+        _, data = _get(base, "/api/japac")
+        countries = data.get("countries") or []
+        if len(countries) < 2:
+            return Result("grid benchmarks", FAIL, f"only {len(countries)} grids returned")
+        if not data.get("basis") or not data.get("boundary_note"):
+            return Result(
+                "grid benchmarks",
+                FAIL,
+                "payload lost its basis/boundary — the page would show comparison "
+                "numbers without saying how they were derived",
+            )
+        intensities = [row.get("intensity", 0) for row in countries]
+        if intensities != sorted(intensities):
+            return Result("grid benchmarks", FAIL, "grids are not ordered by intensity")
+        home = data.get("home") or {}
+        if not home.get("iso3"):
+            return Result("grid benchmarks", FAIL, "no home grid resolved")
+        return Result(
+            "grid benchmarks",
+            OK,
+            f"{len(countries)} grids · home {home.get('country')} rank {home.get('rank')}"
+            f"/{home.get('of')} · basis={data.get('basis')} · {data.get('licence')}",
+        )
+
     _check(results, "ui / pages", ui_pages)
     _check(results, "health / LLM", health)
     _check(results, "health / UI", ui)
@@ -298,6 +329,7 @@ def build_checks(base: str, ui_url: str | None) -> list[Result]:
         lambda: non_empty("recommendations", "/api/recommendations", "recommendations"),
     )
     _check(results, "action plan", actions)
+    _check(results, "grid benchmarks", grid_benchmarks)
     _check(results, "upload / mapping", upload)
     _check(results, "live factors", live_factors)
     _check(results, "constraint search", constraint_search)

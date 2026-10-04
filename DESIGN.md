@@ -141,6 +141,13 @@ original defect (a marketing hero on an operations dashboard).
 - **Upload — Configure.** Map first, calculate second. The drop zone is a dashed hairline
   rectangle. Both preview tables are `.ledger`. Nothing is written until the operator has seen the
   interpretation.
+- **Grid benchmarks — Compare.** A benchmark against peers is a comparison, so it is a `.ledger`
+  table with the figures right-aligned and a rank column, not a chart. The company's own grid is
+  marked in the table, not separated into a hero. **Every row that carries a number carries its
+  basis**: grid intensity is published on different boundaries (full-lifecycle vs generation), and
+  the two are not interchangeable, so the page states which basis it is showing and never presents
+  a benchmark factor as if it were the inventory's own Scope 2 factor. A comparison page that hides
+  its basis is worse than no comparison page.
 
 ---
 

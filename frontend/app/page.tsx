@@ -3,12 +3,15 @@
 import Link from "next/link";
 import { AskPilot } from "@/components/AskPilot";
 import { TrendChart } from "@/components/TrendChart";
-import { ErrorBanner, Footnote, SectionHead, Skeleton, Stat } from "@/components/ui";
+import { Emphasised, ErrorBanner, Footnote, SectionHead, Skeleton, Stat } from "@/components/ui";
 import { useDashboard } from "@/lib/hooks";
+import { useLocale, useStreamLabel } from "@/lib/i18n";
 import { formatPct, formatTonnes, formatUsd, monthLabel, titleize } from "@/lib/format";
 
 export default function DashboardPage() {
   const { data, loading, error, reload } = useDashboard();
+  const { t, locale } = useLocale();
+  const streamLabel = useStreamLabel();
 
   if (error) {
     return (
@@ -60,44 +63,50 @@ export default function DashboardPage() {
       <section className="mt-7">
         <div className="grid gap-x-12 gap-y-8 lg:grid-cols-[1.45fr_1fr]">
           <div>
-            <p className="kicker">Estimated footprint, annualised</p>
+            <p className="kicker">{t("dash.footprint")}</p>
             <div className="mt-2.5 flex flex-wrap items-baseline gap-x-4 gap-y-2">
               <span className="fig text-[46px] font-medium leading-none tracking-[-0.02em] text-ink">
-                {baseline.total_tco2e.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                {baseline.total_tco2e.toLocaleString(locale === "id" ? "id-ID" : "en-US", {
+                  maximumFractionDigits: 0,
+                })}
               </span>
-              <span className="text-[13px] text-ink-muted">tCO₂e / year</span>
+              <span className="text-[13px] text-ink-muted">{t("dash.perYear")}</span>
               {data.trend_pct !== null && (
                 <span
                   className={`fig border border-rule-strong px-2 py-0.5 text-[11.5px] ${
                     data.trend_pct > 0 ? "text-alert" : "text-save"
                   }`}
                 >
-                  {formatPct(data.trend_pct)} vs previous month
+                  {t("dash.vsPrev", { pct: formatPct(data.trend_pct) })}
                 </span>
               )}
             </div>
 
             <p className="mt-5 max-w-[56ch] font-serif text-[19px] leading-[1.55] text-ink-soft">
               {largestLine && (
-                <>
-                  <b className="font-semibold text-ink">{titleize(largestLine.key)}</b> is the
-                  largest line at{" "}
-                  <b className="font-semibold text-ink">{largestLine.pct.toFixed(1)}%</b> of the
-                  footprint
-                </>
+                <Emphasised
+                  template={t("dash.largestLine")}
+                  values={{
+                    stream: streamLabel(largestLine.key),
+                    pct: largestLine.pct.toFixed(1),
+                  }}
+                />
               )}
               {topAnomaly && (
-                <>
-                  , and{" "}
-                  <b className="font-semibold text-ink">{titleize(topAnomaly.activity_type)}</b>{" "}
-                  moved <b className="font-semibold text-alert">{formatPct(topAnomaly.change_pct)}</b>{" "}
-                  in {monthLabel(topAnomaly.month)}.
-                </>
+                <Emphasised
+                  template={t("dash.largestLine2")}
+                  values={{
+                    stream: streamLabel(topAnomaly.activity_type),
+                    pct: formatPct(topAnomaly.change_pct),
+                    month: monthLabel(topAnomaly.month, locale),
+                  }}
+                  tone="alert"
+                />
               )}
             </p>
 
             <div className="mt-6">
-              <p className="kicker mb-2.5">Scope split</p>
+              <p className="kicker mb-2.5">{t("dash.scopeSplit")}</p>
               <div className="flex gap-0.5">
                 <span className="h-3 bg-ink" style={{ flex: 11.6 }} />
                 <span className="h-3 bg-ink-muted" style={{ flex: 27.3 }} />
@@ -115,25 +124,27 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-2 gap-x-6 gap-y-6 self-start">
             <Stat
-              label="Operating cost"
+              label={t("dash.operatingCost")}
               value={formatUsd(baseline.total_cost_usd).replace("+", "")}
-              sub="tracked activity lines"
+              sub={t("dash.trackedLines")}
             />
             <Stat
-              label="Cloud spend share"
+              label={t("dash.cloudShare")}
               value={`${cloudShare.toFixed(0)}%`}
-              sub={`${formatTonnes(baseline.scope_split.scope_2?.tco2e ?? 0)} in scope 2`}
+              sub={t("dash.inScope2", {
+                amount: formatTonnes(baseline.scope_split.scope_2?.tco2e ?? 0),
+              })}
             />
             <Stat
-              label="Opportunities"
+              label={t("dash.opportunities")}
               value={String(data.opportunity_count)}
-              sub="ranked actions"
+              sub={t("dash.rankedActions")}
               tone="save"
             />
             <Stat
-              label="Signals"
+              label={t("dash.signals")}
               value={String(insightCount)}
-              sub="statistically flagged"
+              sub={t("dash.flagged")}
               tone="alert"
             />
           </div>
@@ -149,8 +160,8 @@ export default function DashboardPage() {
       <div className="mt-8 grid gap-x-10 gap-y-8 lg:grid-cols-2">
         <section className="border-t border-rule pt-4">
           <SectionHead
-            kicker="Trend"
-            title="Monthly emissions"
+            kicker={t("dash.bTrend")}
+            title={t("dash.monthly")}
             note={`${baseline.period?.start ?? ""} → ${baseline.period?.end ?? ""}`}
           />
           <TrendChart series={series} highlightMonth={topAnomaly?.month} />
@@ -158,26 +169,30 @@ export default function DashboardPage() {
 
         <section className="border-t border-rule pt-4">
           <SectionHead
-            kicker="Sources"
-            title="Where it comes from"
-            note={`${breakdown.length} streams`}
+            kicker={t("dash.bSources")}
+            title={t("dash.whereFrom")}
+            note={t("dash.nStreams", { n: breakdown.length })}
           />
           <table className="ledger">
             <thead>
               <tr>
-                <th>Stream</th>
-                <th>tCO₂e</th>
-                <th>Share</th>
-                <th>Cost USD</th>
+                <th>{t("dash.thStream")}</th>
+                <th>{t("dash.thTco2e")}</th>
+                <th>{t("dash.thShare")}</th>
+                <th>{t("dash.thCost")}</th>
               </tr>
             </thead>
             <tbody>
               {breakdown.map((row) => (
                 <tr key={row.key}>
-                  <td>{titleize(row.key)}</td>
-                  <td>{row.tco2e.toLocaleString("en-US", { maximumFractionDigits: 1 })}</td>
+                  <td>{streamLabel(row.key)}</td>
+                  <td>
+                    {row.tco2e.toLocaleString(locale === "id" ? "id-ID" : "en-US", {
+                      maximumFractionDigits: 1,
+                    })}
+                  </td>
                   <td>{row.pct.toFixed(1)}%</td>
-                  <td>{row.cost_usd.toLocaleString("en-US", { maximumFractionDigits: 0 })}</td>
+                  <td>{row.cost_usd.toLocaleString(locale === "id" ? "id-ID" : "en-US", { maximumFractionDigits: 0 })}</td>
                 </tr>
               ))}
             </tbody>
@@ -189,11 +204,11 @@ export default function DashboardPage() {
       <div className="mt-8 grid gap-x-10 gap-y-8 lg:grid-cols-2">
         <section className="border-t border-rule pt-4">
           <SectionHead
-            kicker="Diagnose"
-            title={`${insights.length} signals found`}
+            kicker={t("dash.bDiagnose")}
+            title={t("dash.signalsFound", { n: insights.length })}
             action={
               <Link href="/insights" className="btn-quiet">
-                Investigate →
+                {t("dash.investigate")}
               </Link>
             }
           />
@@ -217,20 +232,18 @@ export default function DashboardPage() {
               </li>
             ))}
             {insights.length === 0 && (
-              <li className="py-2.5 text-[12px] text-ink-muted">
-                No anomalies detected in the current series.
-              </li>
+              <li className="py-2.5 text-[12px] text-ink-muted">{t("dash.noAnomalies")}</li>
             )}
           </ul>
         </section>
 
         <section className="border-t border-rule pt-4">
           <SectionHead
-            kicker="Act"
-            title="Top recommended actions"
+            kicker={t("dash.bAct")}
+            title={t("dash.topActions")}
             action={
               <Link href="/actions" className="btn-quiet">
-                Action plan →
+                {t("dash.actionPlan")}
               </Link>
             }
           />
@@ -249,7 +262,8 @@ export default function DashboardPage() {
                   </span>
                   <span className="fig mt-0.5 block text-[11.5px] text-ink-muted">
                     −{formatTonnes(recommendation.carbon_impact_t)} ·{" "}
-                    {formatUsd(recommendation.cost_impact_usd)}/yr · {recommendation.effort} effort ·{" "}
+                    {formatUsd(recommendation.cost_impact_usd)}/yr ·{" "}
+                    {t(`effort.${recommendation.effort}`)} ·{" "}
                     {recommendation.confidence_pct.toFixed(0)}%
                   </span>
                 </span>
@@ -264,14 +278,13 @@ export default function DashboardPage() {
 
       <div className="mt-8">
         <Footnote>
-          <b>Method.</b> Measured from {baseline.activity_count} activity records across{" "}
-          {baseline.month_count} months. Every carbon figure is activity data × a cited emission
-          factor, computed by the deterministic engine — the language model selects which analysis
-          to run and explains it, it never produces a number. Grid factor:{" "}
-          {titleize(data.company.region)}. <b>1</b> UK Government GHG Conversion Factors 2026.{" "}
-          <b>2</b> Cloud Carbon Footprint methodology. <b>Uncertainty.</b> Spend-based procurement
-          carries ~60% uncertainty and is the largest line, so each recommendation carries its own
-          confidence. Scenario maths is linear; no rebound effect is modelled.
+          {t("dash.method", {
+            records: baseline.activity_count,
+            months: baseline.month_count ?? 0,
+            region: titleize(data.company.region),
+          })}{" "}
+          <b>{t("dash.sourcesLabel")}</b> UK Government GHG Conversion Factors 2026; Cloud Carbon
+          Footprint methodology.
         </Footnote>
       </div>
     </div>
@@ -287,16 +300,17 @@ function Header({
   region?: string;
   period?: { start: string; end: string };
 }) {
+  const { t } = useLocale();
   return (
     <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 border-b-2 border-ink pb-4">
       <div>
-        <p className="kicker">Executive dashboard</p>
+        <p className="kicker">{t("dash.kicker")}</p>
         <h1 className="mt-1.5 font-serif text-[26px] font-semibold leading-none tracking-tight text-ink">
           {company}
         </h1>
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        {region && <span className="chip">Grid region · {region}</span>}
+        {region && <span className="chip">{t("dash.gridRegion", { region })}</span>}
         {period && (
           <span className="chip">
             {period.start} → {period.end}

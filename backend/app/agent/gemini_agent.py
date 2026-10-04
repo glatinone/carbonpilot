@@ -12,6 +12,7 @@ the demo still runs end to end (clearly labelled `mode="offline"`).
 from __future__ import annotations
 
 import json
+import os
 import re
 from typing import Any
 
@@ -116,6 +117,14 @@ def _gemini_chat(db: Session, company_id: int, message: str) -> dict:
     from google.genai import types
 
     settings = get_settings()
+
+    # The SDK resolves its base URL from the process environment, not from our
+    # Settings object (see config.gemini_base_url). Export it before the client is
+    # built, or a .env-only endpoint override is silently ignored and the key gets
+    # sent to the wrong host.
+    if settings.gemini_base_url.strip():
+        os.environ.setdefault("GOOGLE_GEMINI_BASE_URL", settings.gemini_base_url.strip())
+
     client = genai.Client(api_key=settings.llm_key)
     model = _resolve_model(client, settings.gemini_model)
 

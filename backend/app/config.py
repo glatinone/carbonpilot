@@ -30,6 +30,21 @@ class Settings(BaseSettings):
     google_api_key: str = ""
     gemini_model: str = "gemini-2.5-flash"
 
+    # Endpoint override, for a gateway or proxy that speaks the Gemini API.
+    #
+    # This has to be accepted *here* even though the google-genai SDK reads
+    # GOOGLE_GEMINI_BASE_URL from the process environment itself: pydantic-settings
+    # only loads keys that map to a field, so a value that lives solely in .env
+    # never reaches os.environ, the SDK falls back to Google's own endpoint, and a
+    # gateway key is then rejected as invalid — the agent degrades to the
+    # deterministic router and the only visible symptom is a quiet fallback.
+    # Declaring it makes it loaded; gemini_agent exports it before building the
+    # client. Verified against google-genai 1.75.0 (_base_url.get_base_url).
+    gemini_base_url: str = Field(
+        default="",
+        validation_alias=AliasChoices("GOOGLE_GEMINI_BASE_URL", "gemini_base_url"),
+    )
+
     # Refuse to boot when the LLM path must be live (e.g. a demo where the
     # offline fallback would only be discovered on stage). The field name alone
     # maps to REQUIRE_LLM; the alias accepts the documented CARBONPILOT_ name

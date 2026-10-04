@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CarbonPilot — design directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ---------------------------------------------------------------- board */
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    background: #0d0e10;
+    color: #d8d8d4;
+  }
+  .board { max-width: 1180px; margin: 0 auto; padding: 56px 32px 96px; }
+  .board > h1 {
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 600; font-size: 30px; letter-spacing: -0.01em;
+    margin: 0 0 8px; color: #fff;
+  }
+  .board > .sub { font-size: 14px; color: #8b8f96; margin: 0 0 8px; max-width: 62ch; line-height: 1.6; }
+  .board > .diag {
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; line-height: 1.8;
+    color: #a4a8ae; border-left: 2px solid #33363c; padding: 4px 0 4px 16px; margin: 24px 0 56px;
+  }
+  .board > .diag b { color: #e8c15c; font-weight: 600; }
+
+  .opt { margin: 0 0 88px; }
+  .opt__label {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px;
+    border-top: 1px solid #2a2d33; padding-top: 14px; margin-bottom: 6px;
+  }
+  .opt__label .k {
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; color: #6f747c;
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .opt__label .n { font-size: 17px; font-weight: 600; color: #fff; }
+  .opt__note { font-size: 13px; color: #8b8f96; margin: 0 0 18px; max-width: 74ch; line-height: 1.6; }
+
+  .frame { background: #fff; overflow: hidden; }
+
+  /* ============================================================== OPTION A
+     Ledger — audit-grade light. Rules instead of cards, figures right-aligned,
+     footnote markers. No gradient, no blur, 2px radii. */
+  .a {
+    --paper: #fbfaf7; --rule: #e2e0d8; --rule-strong: #c9c6ba;
+    --ink: #14150f; --muted: #6d6d63; --faint: #9a9a8e;
+    --save: #1c4b36; --alert: #9c5a12;
+    background: var(--paper); color: var(--ink);
+    font-size: 13px;
+  }
+  .a .masthead {
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 24px;
+    padding: 26px 34px 16px; border-bottom: 2px solid var(--ink);
+  }
+  .a .masthead h2 {
+    font-family: "Source Serif 4", Georgia, serif; font-size: 22px; font-weight: 700;
+    margin: 0; letter-spacing: -0.01em;
+  }
+  .a .masthead .meta {
+    font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--muted);
+    text-align: right; line-height: 1.7;
+  }
+  .a .band { display: grid; grid-template-columns: 2.1fr 1fr; }
+  .a .band > div { padding: 22px 34px; }
+  .a .band > div + div { border-left: 1px solid var(--rule); }
+  .a .k {
+    font-family: "IBM Plex Mono", monospace; font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--faint); margin-bottom: 10px;
+  }
+  .a .total { display: flex; align-items: baseline; gap: 12px; }
+  .a .total .fig {
+    font-family: "IBM Plex Mono", monospace; font-size: 40px; font-weight: 600;
+    letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+  }
+  .a .total .unit { font-size: 13px; color: var(--muted); }
+  .a .total .delta {
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--save);
+    border: 1px solid var(--rule-strong); padding: 2px 7px; border-radius: 2px;
+  }
+
+  .a .scopes { display: flex; gap: 2px; margin: 14px 0 8px; }
+  .a .scopes span { height: 12px; display: block; }
+  .a .scope-key { display: flex; gap: 20px; flex-wrap: wrap; font-size: 11.5px; color: var(--muted); }
+  .a .scope-key i { font-style: normal; font-family: "IBM Plex Mono", monospace; color: var(--ink); }
+
+  .a .series { display: flex; align-items: flex-end; gap: 3px; height: 92px; margin-top: 4px; }
+  .a .series i { flex: 1; background: #d6d3c8; display: block; }
+  .a .series i.hi { background: var(--alert); }
+  .a .series-x {
+    display: flex; gap: 3px; margin-top: 6px;
+    font-family: "IBM Plex Mono", monospace; font-size: 9px; color: var(--faint);
+  }
+  .a .series-x i { flex: 1; font-style: normal; text-align: center; }
+
+  .a table { width: 100%; border-collapse: collapse; }
+  .a thead th {
+    font-family: "IBM Plex Mono", monospace; font-size: 9.5px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--faint); font-weight: 500; text-align: right;
+    padding: 0 0 8px; border-bottom: 1px solid var(--rule-strong);
+  }
+  .a thead th:first-child { text-align: left; }
+  .a tbody td {
+    padding: 9px 0; border-bottom: 1px solid var(--rule);
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .a tbody td:first-child {
+    text-align: left; font-family: Inter, sans-serif; font-size: 12.5px; color: var(--ink);
+  }
+  .a tbody tr:last-child td { border-bottom: none; }
+  .a .share { color: var(--muted); }
+
+  .a .memo { border-top: 1px solid var(--rule-strong); padding: 20px 34px 26px; }
+  .a .memo h3 {
+    font-family: "Source Serif 4", Georgia, serif; font-size: 16px; font-weight: 600;
+    margin: 0 0 10px;
+  }
+  .a .memo .row { display: flex; gap: 28px; flex-wrap: wrap; font-size: 12.5px; }
+  .a .memo .row div { min-width: 108px; }
+  .a .memo .row .v {
+    font-family: "IBM Plex Mono", monospace; font-size: 16px; display: block; margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .a .memo .v.good { color: var(--save); }
+  .a .foot {
+    border-top: 1px solid var(--rule); padding: 14px 34px 20px; background: #f6f5f1;
+    font-size: 11px; color: var(--muted); line-height: 1.7;
+  }
+  .a .foot b { color: var(--ink); font-weight: 600; }
+
+  /* ============================================================== OPTION B
+     Instrument — dense dark, flat, hairlines. One state colour, used only for
+     state. Mono for figures and labels. No cards, no radii, no blur. */
+  .b {
+    --bg: #08090a; --rule: #202227; --text: #e6e6e3; --muted: #83888f;
+    --faint: #5c6169; --state: #cbf24c; --warn: #f0a33c;
+    background: var(--bg); color: var(--text); font-size: 12px;
+  }
+  .b .bar {
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    padding: 10px 20px; border-bottom: 1px solid var(--rule);
+    font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--muted);
+  }
+  .b .bar b { color: var(--text); font-weight: 500; }
+  .b .grid { display: grid; grid-template-columns: repeat(12, 1fr); }
+  .b .cell { border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 14px 16px; }
+  .b .cell:last-child { border-right: none; }
+  .b .k {
+    font-family: "IBM Plex Mono", monospace; font-size: 9.5px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--faint); margin-bottom: 8px;
+  }
+  .b .c3 { grid-column: span 3; } .b .c4 { grid-column: span 4; }
+  .b .c5 { grid-column: span 5; } .b .c7 { grid-column: span 7; } .b .c12 { grid-column: span 12; }
+  .b .big {
+    font-family: "IBM Plex Mono", monospace; font-size: 26px; font-weight: 500;
+    letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+  }
+  .b .sub { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; color: var(--muted); margin-top: 5px; }
+  .b .dot { display: inline-block; width: 6px; height: 6px; margin-right: 6px; vertical-align: 1px; }
+  .b .dot.s1 { background: #6b7280; } .b .dot.s2 { background: var(--state); } .b .dot.s3 { background: #3f4650; }
+  .b .rows { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; }
+  .b .rows .r { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--rule); }
+  .b .rows .r:last-child { border-bottom: none; }
+  .b .rows .r span:last-child { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .b .spk { display: flex; align-items: flex-end; gap: 2px; height: 64px; }
+  .b .spk i { flex: 1; background: #2a2d33; display: block; }
+  .b .spk i.hi { background: var(--warn); }
+  .b .flag { border: 1px solid var(--warn); color: var(--warn); padding: 1px 6px; font-size: 10px; }
+  .b .actrow { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; }
+  .b .actrow .t { font-size: 13.5px; color: var(--text); }
+  .b .actrow .m { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--state); }
+
+  /* ============================================================== OPTION C
+     Report — editorial. This is a Decide/Learn surface, so a large statement
+     is correct here. Figures sit inside sentences; evidence is a footnote. */
+  .c {
+    --paper: #ffffff; --band: #f3f3ef; --ink: #101010; --muted: #5f5f59;
+    --rule: #dedcd4; --alert: #cf4326; --good: #1f6b4c;
+    background: var(--paper); color: var(--ink);
+  }
+  .c .lead { padding: 46px 52px 30px; }
+  .c .eyebrow {
+    font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 18px;
+  }
+  .c h2 {
+    font-family: "Source Serif 4", Georgia, serif; font-size: 40px; line-height: 1.14;
+    letter-spacing: -0.02em; font-weight: 600; margin: 0 0 20px; max-width: 24ch;
+  }
+  .c h2 em { font-style: normal; color: var(--alert); }
+  .c .standfirst { font-size: 15px; line-height: 1.75; color: #2c2c28; max-width: 62ch; }
+  .c .standfirst code {
+    font-family: "IBM Plex Mono", monospace; font-size: 13.5px; background: var(--band);
+    padding: 1px 5px;
+  }
+  .c .cols { display: grid; grid-template-columns: 1.35fr 1fr; border-top: 1px solid var(--rule); }
+  .c .cols > div { padding: 28px 52px; }
+  .c .cols > div + div { border-left: 1px solid var(--rule); background: var(--band); }
+  .c .cols h4 {
+    font-family: "IBM Plex Mono", monospace; font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted); margin: 0 0 16px; font-weight: 500;
+  }
+  .c .claim { font-family: "Source Serif 4", Georgia, serif; font-size: 21px; line-height: 1.5; margin: 0 0 16px; }
+  .c .claim b { font-weight: 700; }
+  .c .body { font-size: 14px; line-height: 1.8; color: #33332e; }
+  .c table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .c td { padding: 8px 0; border-bottom: 1px solid var(--rule); vertical-align: baseline; }
+  .c td:last-child {
+    text-align: right; font-family: "IBM Plex Mono", monospace; font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .c sup { color: var(--muted); font-size: 9px; }
+  .c .next {
+    border-top: 2px solid var(--ink); padding: 30px 52px 34px;
+    display: grid; grid-template-columns: 1.35fr 1fr; gap: 40px; align-items: start;
+  }
+  .c .next h3 {
+    font-family: "Source Serif 4", Georgia, serif; font-size: 26px; font-weight: 600;
+    margin: 0 0 12px; line-height: 1.3; letter-spacing: -0.01em;
+  }
+  .c .next p { font-size: 14px; line-height: 1.75; color: #33332e; margin: 0; }
+  .c .figs { display: flex; gap: 34px; }
+  .c .figs .f { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; }
+  .c .figs .f .v { display: block; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+  .c .figs .f .l { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .c .figs .f .v.good { color: var(--good); }
+  .c .sources {
+    border-top: 1px solid var(--rule); padding: 16px 52px 22px;
+    font-size: 10.5px; color: var(--muted); line-height: 1.8;
+  }
+  .c .sources b { color: var(--ink); font-weight: 600; }
+
+  @media (max-width: 900px) {
+    .a .band, .c .cols, .c .next { grid-template-columns: 1fr; }
+    .a .band > div + div, .c .cols > div + div { border-left: none; border-top: 1px solid var(--rule); }
+    .b .c3, .b .c4, .b .c5, .b .c7 { grid-column: span 12; }
+    .c h2 { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <h1>CarbonPilot — three directions</h1>
+  <p class="sub">Same dashboard, same real numbers from the running API (11,208 tCO&#8322;e, 168 records, 2026-01 → 2026-12). These are three different <em>compositions</em>, not three colour schemes. Pick one and I rebuild all five pages in it.</p>
+
+  <p class="diag">
+    <b>Slop diagnostic on the current UI — 6/10.</b><br>
+    1 tech gradient (emerald + sky radial glows on body) · 2 generic tech hue (#34d399 / #38bdf8) ·
+    5 unearned blur (.card backdrop-blur, no elevation system) · 6 monument stat (dashboard leads with an
+    oversized number) · 9 default type (Inter + ui-monospace, unchosen) · 10 wrong surface
+    (a Monitor surface composed like a landing page).<br>
+    24 template-vocabulary hits across the frontend (rounded-xl/2xl/full, backdrop-blur, gradient).
+  </p>
+
+  <!-- ============================================================ A -->
+  <section class="opt">
+    <div class="opt__label">
+      <span class="k">Option A</span>
+      <span class="n">Ledger</span>
+      <span class="k">monitor · light · audit-grade</span>
+    </div>
+    <p class="opt__note">Rules instead of cards, figures right-aligned in tabular mono, sources as footnotes. Reads like a statement your CFO already trusts. Kills tells 1, 2, 5, 6, 9.</p>
+
+    <div class="frame a">
+      <div class="masthead">
+        <h2>PT Nusantara Digital</h2>
+        <div class="meta">
+          GHG inventory · 2026-01 → 2026-12<br>
+          168 activity records · grid region ID
+        </div>
+      </div>
+
+      <div class="band">
+        <div>
+          <div class="k">Estimated footprint, annualised</div>
+          <div class="total">
+            <span class="fig">11,208</span>
+            <span class="unit">tCO&#8322;e / year</span>
+            <span class="delta">−1.0% vs last month</span>
+          </div>
+          <div class="scopes">
+            <span style="flex:11.6;background:#2f4f3e"></span>
+            <span style="flex:27.3;background:#7f9a72"></span>
+            <span style="flex:61.1;background:#c9c6ba"></span>
+          </div>
+          <div class="scope-key">
+            <span><i>1</i> &nbsp;1,300.3 t · 11.6%</span>
+            <span><i>2</i> &nbsp;3,064.7 t · 27.3%</span>
+            <span><i>3</i> &nbsp;6,842.9 t · 61.1%</span>
+          </div>
+
+          <div style="margin-top:26px">
+            <div class="k">Monthly emissions <sup>1</sup></div>
+            <div class="series">
+              <i style="height:17%"></i><i style="height:38%"></i><i style="height:44%"></i><i style="height:49%"></i>
+              <i class="hi" style="height:63%"></i><i style="height:59%"></i><i style="height:54%"></i><i style="height:52%"></i>
+              <i class="hi" style="height:93%"></i><i style="height:45%"></i><i style="height:61%"></i><i style="height:55%"></i>
+            </div>
+            <div class="series-x">
+              <i>J</i><i>F</i><i>M</i><i>A</i><i>M</i><i>J</i><i>J</i><i>A</i><i>S</i><i>O</i><i>N</i><i>D</i>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="k">Two months flagged <sup>2</sup></div>
+          <div style="border-left:2px solid var(--alert);padding-left:12px;margin-bottom:18px">
+            <div style="font-weight:600">May 2026 · cloud compute</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:15px;margin-top:3px">+165.4%</div>
+            <div style="color:var(--muted);font-size:11.5px;margin-top:4px;line-height:1.6">weekend share of usage 15% → 60%, 4.1× the previous baseline</div>
+          </div>
+          <div style="border-left:2px solid var(--rule-strong);padding-left:12px">
+            <div style="font-weight:600">Sep 2026 · diesel</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:15px;margin-top:3px">+57.7%</div>
+            <div style="color:var(--muted);font-size:11.5px;margin-top:4px;line-height:1.6">fleet distribution surge</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:22px 34px 8px">
+        <div class="k" style="margin-bottom:12px">Where it comes from</div>
+        <table>
+          <thead>
+            <tr><th>Stream</th><th>tCO&#8322;e</th><th>Share</th><th>Cost USD</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Procurement <span class="share">(spend-based)</span></td><td>5,315.2</td><td>47.4%</td><td>18,982,907</td></tr>
+            <tr><td>Electricity &amp; gas</td><td>3,198.8</td><td>28.5%</td><td>531,661</td></tr>
+            <tr><td>Fleet</td><td>1,166.2</td><td>10.4%</td><td>534,651</td></tr>
+            <tr><td>Business travel</td><td>1,128.7</td><td>10.1%</td><td>3,487,818</td></tr>
+            <tr><td>Cloud</td><td>271.4</td><td>2.4%</td><td>11,880,137</td></tr>
+            <tr><td>Waste &amp; water</td><td>127.6</td><td>1.1%</td><td>127,515</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="memo">
+        <h3>Recommended next action</h3>
+        <div style="font-size:13.5px;margin-bottom:12px">Office energy efficiency retrofit <span style="color:var(--muted)">— apply a 15% reduction to purchased electricity</span></div>
+        <div class="row">
+          <div><span class="k">Carbon saved</span><span class="v good">459.7 t</span></div>
+          <div><span class="k">Cost impact</span><span class="v good">−$74,250</span></div>
+          <div><span class="k">Effort</span><span class="v" style="font-size:14px">Low</span></div>
+          <div><span class="k">Confidence</span><span class="v" style="font-size:14px">90.4%</span></div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <b>Method.</b> Every figure is activity data × a cited emission factor, computed by the deterministic engine; the language model chooses which analysis to run and explains it, it never produces a number. Reductions scale linearly with no rebound effect and factors held constant.
+        &nbsp;<b>1</b> UK Government GHG Conversion Factors 2026. &nbsp;<b>2</b> robust median/MAD z-score over the monthly series.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ B -->
+  <section class="opt">
+    <div class="opt__label">
+      <span class="k">Option B</span>
+      <span class="n">Instrument</span>
+      <span class="k">monitor · dark · dense</span>
+    </div>
+    <p class="opt__note">Flat black, 1px hairlines, mono for every figure and label, one state colour used only for state. No cards, no radii, no glow, no blur. Closest to what you have, so the lowest-risk rebuild.</p>
+
+    <div class="frame b">
+      <div class="bar">
+        <span><b>PT Nusantara Digital</b> &nbsp;·&nbsp; GHG inventory &nbsp;·&nbsp; 2026-01 → 2026-12</span>
+        <span>168 records &nbsp;·&nbsp; grid ID &nbsp;·&nbsp; synced</span>
+      </div>
+
+      <div class="grid">
+        <div class="cell c3">
+          <div class="k">Footprint</div>
+          <div class="big">11,208</div>
+          <div class="sub">tCO&#8322;e / year &nbsp;<span style="color:#cbf24c">−1.0%</span></div>
+        </div>
+        <div class="cell c3">
+          <div class="k">Scope 1 / 2 / 3</div>
+          <div class="big">1.3k / 3.1k / 6.8k</div>
+          <div class="sub">11.6% &nbsp; 27.3% &nbsp; 61.1%</div>
+        </div>
+        <div class="cell c3">
+          <div class="k">Flagged months</div>
+          <div class="big">2</div>
+          <div class="sub">may · sep</div>
+        </div>
+        <div class="cell c3" style="border-right:none">
+          <div class="k">Open actions</div>
+          <div class="big">0</div>
+          <div class="sub">16 recommendations</div>
+        </div>
+
+        <div class="cell c7">
+          <div class="k">Monthly emissions · tCO&#8322;e</div>
+          <div class="spk">
+            <i style="height:17%"></i><i style="height:38%"></i><i style="height:44%"></i><i style="height:49%"></i>
+            <i class="hi" style="height:63%"></i><i style="height:59%"></i><i style="height:54%"></i><i style="height:52%"></i>
+            <i class="hi" style="height:93%"></i><i style="height:45%"></i><i style="height:61%"></i><i style="height:55%"></i>
+          </div>
+          <div class="sub" style="display:flex;justify-content:space-between"><span>jan</span><span>dec</span></div>
+        </div>
+
+        <div class="cell c5">
+          <div class="k">Streams</div>
+          <div class="rows">
+            <div class="r"><span>procurement</span><span>5,315.2 &nbsp; 47.4%</span></div>
+            <div class="r"><span>electricity</span><span>3,198.8 &nbsp; 28.5%</span></div>
+            <div class="r"><span>fleet</span><span>1,166.2 &nbsp; 10.4%</span></div>
+            <div class="r"><span>travel</span><span>1,128.7 &nbsp; 10.1%</span></div>
+            <div class="r"><span>cloud</span><span>271.4 &nbsp; 2.4%</span></div>
+          </div>
+        </div>
+
+        <div class="cell c12" style="border-bottom:none">
+          <div class="k">Signals</div>
+          <div class="rows">
+            <div class="r">
+              <span><span class="flag">may</span>&nbsp; cloud_compute_vcpu_hour &nbsp;+165.4% &nbsp;<span style="color:#83888f">weekend share 15%→60%</span></span>
+              <span>z 12.4</span>
+            </div>
+            <div class="r">
+              <span><span class="flag">sep</span>&nbsp; diesel_litre &nbsp;+57.7% &nbsp;<span style="color:#83888f">fleet distribution surge</span></span>
+              <span>z 42.4</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="cell c12" style="border-bottom:none">
+          <div class="k">Top recommendation</div>
+          <div class="actrow">
+            <span class="t">Office energy efficiency retrofit &nbsp;<span style="color:#83888f">· low effort · confidence 90.4%</span></span>
+            <span class="m">−459.7 t &nbsp; −$74,250</span>
+          </div>
+          <div class="sub">share of footprint 27.3% &nbsp;·&nbsp; method activity_data × emission_factor &nbsp;·&nbsp; factors held constant, no rebound modelled</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ C -->
+  <section class="opt">
+    <div class="opt__label">
+      <span class="k">Option C</span>
+      <span class="n">Report</span>
+      <span class="k">decide / learn · light · editorial</span>
+    </div>
+    <p class="opt__note">The only surface where a large statement is correct. Leads with the finding as a sentence, puts figures inside that sentence, and treats citations as footnotes — which is your actual differentiator, made visible. Kills tells 3, 6, 8, 10.</p>
+
+    <div class="frame c">
+      <div class="lead">
+        <div class="eyebrow">PT Nusantara Digital · GHG inventory 2026</div>
+        <h2>You emit <em>11,208 tonnes</em> a year. One retrofit pays for itself, and a weekend workload is quietly <em>tripling</em>.</h2>
+        <p class="standfirst">
+          Measured from <code>168</code> activity records across twelve months, split
+          <code>11.6%</code> Scope 1, <code>27.3%</code> Scope 2 and <code>61.1%</code> Scope 3.
+          Every figure below is activity data multiplied by a cited emission factor — the model chooses
+          the analysis, the engine produces the number.
+        </p>
+      </div>
+
+      <div class="cols">
+        <div>
+          <h4>What moved</h4>
+          <p class="claim">Cloud compute rose <b>165%</b> in May — the weekend share of usage went from <b>15%</b> to <b>60%</b>.</p>
+          <p class="body">
+            That is 4.1× the previous baseline, and it is a scheduling decision, not a growth story.
+            Cloud is only <b>2.4%</b> of emissions but <b>33%</b> of tracked spend — which is exactly why the
+            decision layer, not the accounting layer, is the product. A second signal in September
+            (diesel <b>+57.7%</b>) is a distribution surge, not a trend.
+          </p>
+        </div>
+        <div>
+          <h4>Where it comes from</h4>
+          <table>
+            <tr><td>Procurement <sup>1</sup></td><td>5,315.2</td></tr>
+            <tr><td>Electricity &amp; gas <sup>2</sup></td><td>3,198.8</td></tr>
+            <tr><td>Fleet <sup>2</sup></td><td>1,166.2</td></tr>
+            <tr><td>Business travel <sup>2</sup></td><td>1,128.7</td></tr>
+            <tr><td>Cloud <sup>3</sup></td><td>271.4</td></tr>
+            <tr><td>Waste &amp; water <sup>2</sup></td><td>127.6</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="next">
+        <div>
+          <h3>Right-size weekend cloud workloads, then retrofit the office.</h3>
+          <p>
+            Ranked by carbon × cost × effort weighted by confidence — not by whichever bar is biggest.
+            The retrofit saves more carbon and requires less effort than the renewable PPA, which is why
+            it ranks first even though procurement is the largest line.
+          </p>
+        </div>
+        <div class="figs">
+          <div class="f"><span class="v good">−459.7</span><span class="l">tCO&#8322;e / yr</span></div>
+          <div class="f"><span class="v good">−$74,250</span><span class="l">usd / yr</span></div>
+          <div class="f"><span class="v">90.4%</span><span class="l">confidence</span></div>
+        </div>
+      </div>
+
+      <div class="sources">
+        <b>Sources.</b> <b>1</b> EPA Supply Chain GHG Emission Factors (spend-based).
+        <b>2</b> UK Government GHG Conversion Factors 2026. <b>3</b> Cloud Carbon Footprint methodology.
+        Grid factor: Indonesia MEMR (Jamali).
+        <b>Uncertainty.</b> Spend-based procurement carries 60% uncertainty and is the largest line — the
+        confidence column exists for exactly that. Scenario maths is linear; no rebound effect or learning
+        curve is modelled.
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

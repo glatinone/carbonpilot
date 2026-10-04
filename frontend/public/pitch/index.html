@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CarbonPilot — pitch</title>
+<link rel="stylesheet" href="fonts.css" />
+<style>
+  /* Same tokens as the application, so the deck and the product are one object. */
+  :root {
+    --paper: #fbfaf7;
+    --band: #f6f5f1;
+    --ink: #14150f;
+    --soft: #33332e;
+    --muted: #6d6d63;
+    --faint: #9a9a8e;
+    --rule: #e2e0d8;
+    --strong: #c9c6ba;
+    --save: #1c4b36;
+    --alert: #9c5a12;
+    --stop: #8f2f22;
+    --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --sans: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+    --pad: clamp(28px, 5vw, 88px);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  /* ---------- chrome ---------- */
+
+  .chrome {
+    position: fixed;
+    inset: 0 0 auto 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 18px var(--pad);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--faint);
+    z-index: 2;
+  }
+
+  .chrome .mark { color: var(--muted); }
+
+  .progress {
+    position: fixed;
+    inset: auto 0 0 0;
+    height: 2px;
+    background: var(--rule);
+    z-index: 2;
+  }
+
+  .progress span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--ink);
+    transition: width 320ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  /* ---------- slides ---------- */
+
+  .slide {
+    position: fixed;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    padding: 84px var(--pad) 72px;
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+
+  .slide.active { display: flex; }
+
+  .slide.active > * {
+    animation: rise 340ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+
+  .slide.active > *:nth-child(2) { animation-delay: 40ms; }
+  .slide.active > *:nth-child(3) { animation-delay: 80ms; }
+  .slide.active > *:nth-child(4) { animation-delay: 120ms; }
+  .slide.active > *:nth-child(5) { animation-delay: 160ms; }
+  .slide.active > *:nth-child(6) { animation-delay: 200ms; }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .slide.active > * { animation: none; }
+    .progress span { transition: none; }
+  }
+
+  .kicker {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin: 0 0 18px;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(38px, 6.2vw, 76px);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin: 0;
+    max-width: 20ch;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(26px, 3.4vw, 42px);
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+    margin: 0 0 8px;
+    max-width: 26ch;
+  }
+
+  p.lead {
+    font-family: var(--serif);
+    font-size: clamp(16px, 1.5vw, 20px);
+    line-height: 1.55;
+    color: var(--soft);
+    margin: 14px 0 0;
+    max-width: 62ch;
+  }
+
+  .rule { height: 1px; background: var(--rule); border: 0; margin: 30px 0; }
+  .rule.top { margin-top: 0; }
+
+  /* ---------- pieces ---------- */
+
+  .figures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 clamp(24px, 4vw, 64px);
+  }
+
+  .figure { border-top: 2px solid var(--ink); padding-top: 10px; min-width: 132px; }
+  .figure dt {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin: 0 0 6px;
+  }
+  .figure dd {
+    font-family: var(--mono);
+    font-size: clamp(20px, 2.4vw, 30px);
+    font-weight: 500;
+    line-height: 1;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .figure dd small { font-size: 0.5em; color: var(--muted); margin-left: 6px; letter-spacing: 0; }
+  .figure.save dd { color: var(--save); }
+  .figure.alert dd { color: var(--alert); }
+
+  ol.points, ul.points { list-style: none; margin: 0; padding: 0; }
+  ol.points { counter-reset: point; }
+  ol.points li, ul.points li {
+    border-top: 1px solid var(--rule);
+    padding: 13px 0 13px 0;
+    display: flex;
+    gap: 18px;
+    align-items: baseline;
+    font-size: 15px;
+    color: var(--soft);
+  }
+  ol.points li::before {
+    counter-increment: point;
+    content: counter(point, decimal-leading-zero);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--faint);
+    flex: 0 0 26px;
+  }
+  ul.points li::before {
+    content: "—";
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--faint);
+    flex: 0 0 26px;
+  }
+  ol.points li b, ul.points li b { color: var(--ink); font-weight: 600; }
+
+  .loop {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    font-family: var(--mono);
+    font-size: clamp(13px, 1.5vw, 18px);
+    letter-spacing: 0.02em;
+  }
+  .loop .step { color: var(--ink); }
+  .loop .arrow { color: var(--strong); }
+
+  .say {
+    border-left: 2px solid var(--ink);
+    padding-left: 20px;
+    font-family: var(--serif);
+    font-size: clamp(19px, 2.3vw, 30px);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    margin: 26px 0 0;
+    max-width: 34ch;
+  }
+
+  .grid2 {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 34px 56px;
+    align-items: start;
+  }
+  @media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; gap: 26px; } }
+
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+  th, td { text-align: left; padding: 9px 14px 9px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 400;
+  }
+  td.mono, .mono { font-family: var(--mono); }
+  tr.last td { border-bottom: 0; }
+  td.pos { color: var(--save); font-family: var(--mono); }
+  td.neg { color: var(--alert); font-family: var(--mono); }
+
+  .url {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--soft);
+    margin-top: 26px;
+    word-break: break-all;
+  }
+
+  .foot {
+    font-size: 12.5px;
+    color: var(--muted);
+    max-width: 74ch;
+    margin-top: auto;
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+  }
+
+  /* ---------- controls ---------- */
+
+  .controls {
+    position: fixed;
+    right: var(--pad);
+    bottom: 20px;
+    display: flex;
+    gap: 8px;
+    z-index: 3;
+  }
+
+  .controls button {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: border-color 140ms ease, color 140ms ease;
+  }
+  .controls button:hover { border-color: var(--strong); color: var(--ink); }
+  .controls button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .controls button[disabled] { opacity: 0.4; cursor: default; }
+
+  .notes {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    max-height: 34vh;
+    overflow: auto;
+    background: var(--band);
+    border-top: 1px solid var(--strong);
+    padding: 16px var(--pad) 22px;
+    font-size: 13px;
+    color: var(--soft);
+    display: none;
+    z-index: 4;
+  }
+  .notes.on { display: block; }
+  .notes b { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); display: block; margin-bottom: 6px; }
+
+  /* ---------- print: one slide per page, for the submission PDF ---------- */
+
+  @media print {
+    body { overflow: visible; background: #fff; }
+    .chrome, .controls, .progress, .notes { display: none !important; }
+    .slide {
+      display: flex !important;
+      position: relative;
+      inset: auto;
+      page-break-after: always;
+      height: 100vh;
+      max-width: none;
+      padding: 40px 48px;
+    }
+    .slide.active > * { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="chrome">
+  <span class="mark">CarbonPilot</span>
+  <span id="counter">01 / 06</span>
+</header>
+
+<!-- 1 ────────────────────────────────────────────────────────────── -->
+<section class="slide active" data-title="CarbonPilot">
+  <p class="kicker">JAPAC AI hackathon</p>
+  <h1>CarbonPilot</h1>
+  <p class="lead">An AI carbon decision engine. It turns fragmented operational data into
+  prioritised, financially-aware decarbonisation actions — and every number it prints is
+  traceable to a calculation engine, never to the language model.</p>
+  <div class="rule"></div>
+  <div class="loop">
+    <span class="step">Measure</span><span class="arrow">→</span>
+    <span class="step">Diagnose</span><span class="arrow">→</span>
+    <span class="step">Simulate</span><span class="arrow">→</span>
+    <span class="step">Act</span>
+  </div>
+  <p class="url">rakazo-civo.tail1b51ed.ts.net:8443</p>
+  <div class="foot">Six screens, one loop: ingest, measure, diagnose, simulate, act, and price
+  the same load against twenty regional grids.</div>
+</section>
+
+<!-- 2 ────────────────────────────────────────────────────────────── -->
+<section class="slide" data-title="Problem">
+  <p class="kicker">The problem</p>
+  <h2>Companies can already measure their carbon. They still cannot decide what to do about it.</h2>
+  <div class="rule"></div>
+  <div class="grid2">
+    <ol class="points">
+      <li><span><b>The data exists, the decision does not.</b> Electricity, cloud, travel, fleet and procurement sit in CSVs and ERP exports. Aggregating them produces a number, not a plan.</span></li>
+      <li><span><b>Reporting is a backward view.</b> A footprint tells you where you were. Management asks what changes next, and what it will cost.</span></li>
+      <li><span><b>Carbon and money are decided separately.</b> The largest reduction is often the most expensive, and nobody can see the trade-off in one place.</span></li>
+    </ol>
+    <div>
+      <div class="figures">
+        <dl class="figure"><dt>Footprint</dt><dd>11,208<small>tCO₂e / yr</small></dd></dl>
+        <dl class="figure"><dt>Scope 3 share</dt><dd>61.1<small>%</small></dd></dl>
+      </div>
+      <p class="say">Knowing you emit eleven thousand tonnes does not tell you what to do next.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3 ────────────────────────────────────────────────────────────── -->
+<section class="slide" data-title="Solution">
+  <p class="kicker">What it does</p>
+  <h2>It answers the question after the footprint.</h2>
+  <div class="rule"></div>
+  <div class="grid2">
+    <ol class="points">
+      <li><span><b>Ingest.</b> A CSV is mapped to canonical activity types and scopes, and the interpretation is shown for confirmation. Nothing is written until a human has seen it.</span></li>
+      <li><span><b>Diagnose.</b> A robust median/MAD test finds the months that moved, then attributes each one to the activities that moved with it.</span></li>
+      <li><span><b>Simulate.</b> Interventions are applied to the stored baseline, and a constraint search explores combinations of them.</span></li>
+      <li><span><b>Act.</b> Recommendations are ranked on carbon × cost × effort, weighted by the confidence of their factors, then tracked to an owner.</span></li>
+    </ol>
+    <div>
+      <p class="kicker" style="margin-bottom:10px">The one architectural rule</p>
+      <p class="say" style="margin-top:2px">The language model never produces a carbon number.</p>
+      <p class="lead" style="font-family:var(--sans);font-size:14px">The engine in <span class="mono">app/engine/</span> computes every kilogram. The agent chooses which analyses to run and explains the result, so its failure mode is <i>“I could not find that”</i> — never <i>“here is a plausible number”</i>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 4 ────────────────────────────────────────────────────────────── -->
+<section class="slide" data-title="Product">
+  <p class="kicker">The interaction worth showing</p>
+  <h2>“Reduce our footprint 15% without increasing operating cost.”</h2>
+  <p class="lead">One sentence in. A constraint search over 2,098 scenario combinations out. This is
+  the real result, from the deployed demo:</p>
+  <div class="rule"></div>
+  <div class="figures">
+    <dl class="figure save"><dt>Carbon reduction</dt><dd>33.8<small>%</small></dd></dl>
+    <dl class="figure save"><dt>Carbon saved</dt><dd>3,790<small>tCO₂e / yr</small></dd></dl>
+    <dl class="figure save"><dt>Cost impact</dt><dd>−$775<small>K / yr</small></dd></dl>
+    <dl class="figure"><dt>Feasible</dt><dd>342<small>of 2,098</small></dd></dl>
+  </div>
+  <div class="rule"></div>
+  <div class="grid2">
+    <table>
+      <thead><tr><th>Required actions</th><th>Volume cut</th></tr></thead>
+      <tbody>
+        <tr><td>Renewable PPA for purchased electricity</td><td class="mono">80%</td></tr>
+        <tr><td>Mandate rail over short-haul flights</td><td class="mono">45%</td></tr>
+        <tr><td>Electrify the delivery fleet</td><td class="mono">40%</td></tr>
+        <tr class="last"><td>Supplier engagement and low-carbon sourcing</td><td class="mono">10%</td></tr>
+      </tbody>
+    </table>
+    <div>
+      <p class="foot" style="margin-top:0">Asked for 15%. The engine found a combination that clears the
+      carbon constraint <b>and</b> saves money, and can say why each action is in the set.</p>
+      <p class="foot">Location is a decision variable, not a footnote: the same 4,304,333 kWh costs
+      <b>3,036 tCO₂e</b> on Indonesia’s grid — rank 19 of 20, coal 69% — and would cost
+      <b>399 tCO₂e</b> on New Zealand’s.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 5 ────────────────────────────────────────────────────────────── -->
+<section class="slide" data-title="Technology">
+  <p class="kicker">How it works</p>
+  <h2>An agent that orchestrates tools, over an engine that cannot be argued with.</h2>
+  <div class="rule"></div>
+  <div class="grid2">
+    <div>
+      <p class="kicker" style="margin-bottom:8px">The loop</p>
+      <div class="loop" style="font-size:14px">
+        <span class="step">question</span><span class="arrow">→</span>
+        <span class="step">agent</span><span class="arrow">→</span>
+        <span class="step">tool calls</span><span class="arrow">→</span>
+        <span class="step">engine</span><span class="arrow">→</span>
+        <span class="step">explanation</span>
+      </div>
+      <ul class="points" style="margin-top:18px">
+        <li><span><b>13 tools</b>, and the first step is forced to call one — the model cannot answer a
+        quantitative question from its own head.</span></li>
+        <li><span><b>Retrieval over a cited corpus.</b> A pure-stdlib BM25 ranker retrieves the methodology
+        passages behind a claim, so “why is that factor defensible” is answered from a
+        source of record rather than from recollection.</span></li>
+        <li><span><b>Every recommendation shows its arithmetic:</b> the quantity, the factor, the
+        factor’s source and year, and the uncertainty.</span></li>
+      </ul>
+    </div>
+    <div>
+      <p class="kicker" style="margin-bottom:8px">And it is verified</p>
+      <ul class="points">
+        <li><span><b>105 tests</b> asserting behaviour contracts, not snapshots: that a projection plus its
+        saving equals the baseline, that the constraint search only ever returns scenarios that
+        satisfy the constraints.</span></li>
+        <li><span><b>A preflight that fails on a working-looking key.</b> A dead key produces no error — it
+        produces a correct answer from the deterministic router while the UI still claims the
+        model. That failure is invisible by construction, so the smoke test exists to make it
+        visible.</span></li>
+        <li><span><b>One process.</b> FastAPI serves the UI and the API on one port: no CORS layer, no
+        second deployment, no vendor onboarding.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 6 ────────────────────────────────────────────────────────────── -->
+<section class="slide" data-title="Why us">
+  <p class="kicker">Position</p>
+  <h2>From carbon accounting to carbon action.</h2>
+  <div class="rule"></div>
+  <div class="grid2">
+    <table>
+      <thead><tr><th>Today</th><th>CarbonPilot</th></tr></thead>
+      <tbody>
+        <tr><td>Measure</td><td>Measure</td></tr>
+        <tr><td>Report</td><td>Diagnose</td></tr>
+        <tr><td>Analyse</td><td>Simulate</td></tr>
+        <tr><td>—</td><td>Act</td></tr>
+        <tr class="last"><td class="mono" style="color:var(--muted)">Ranked by size</td><td class="mono">Ranked by carbon × cost × effort</td></tr>
+      </tbody>
+    </table>
+    <div>
+      <p class="lead" style="font-family:var(--sans);font-size:14px">Watershed, Persefoni, Sweep and SINAI
+      already do carbon accounting, AI data ingestion and scenario planning. We do not claim to be
+      the first AI carbon platform; that claim is false and easy to disprove.</p>
+      <p class="lead" style="font-family:var(--sans);font-size:14px">What is narrower and defensible:
+      their AI is aimed at the <b>input</b> pipeline — extracting, mapping, cleaning. Ours is a
+      contract about the <b>output</b>: the model cannot emit a number because the number does not
+      come from the model.</p>
+      <p class="say" style="margin-top:22px;font-size:clamp(17px,1.9vw,24px)">Carbon reporting tells you
+      where you are. CarbonPilot tells you what to do next.</p>
+    </div>
+  </div>
+  <div class="foot">Demonstration build: no compliance reporting (CSRD, SB 253, CDP), no supplier
+  portal or ERP connectors, no multi-tenancy, curated point-estimate factors, and linear scenario
+  maths. Stated here rather than discovered by a judge.</div>
+</section>
+
+<div class="controls">
+  <button id="prev" type="button">← Prev</button>
+  <button id="next" type="button">Next →</button>
+  <button id="notes-btn" type="button">Notes</button>
+</div>
+
+<div class="progress"><span id="bar"></span></div>
+<div class="notes" id="notes"></div>
+
+<script>
+  const slides = [...document.querySelectorAll(".slide")];
+  const bar = document.getElementById("bar");
+  const counter = document.getElementById("counter");
+  const notes = document.getElementById("notes");
+
+  // One short note per slide, for the presenter. Kept in the DOM rather than in a
+  // comment so it can be toggled during rehearsal without opening the source.
+  const NOTES = [
+    "Open with the problem, not the product. The live URL is on the slide; if the venue network fails, this deck is the fallback.",
+    "Name the persona: a sustainability or operations manager who has the data and gets asked 'what do we do next'. Do not say 'all companies'.",
+    "Land the architectural rule here. It is the answer to 'is this just an LLM wrapper' and the reason to trust the numbers later.",
+    "Ask for 15% and no cost increase, then read the result out loud. The 33.8% and the $775K saving are real, from the deployed instance.",
+    "Do not oversell the agent. Say what it does: 13 tools, forced first tool call, retrieval that cites its source, and a smoke test that fails when the key quietly stops working.",
+    "Concede the category. Naming Watershed and Persefoni first makes the narrower claim credible. Then close on the line.",
+  ];
+
+  let index = Math.min(
+    Math.max(parseInt(location.hash.replace("#", ""), 10) || 1, 1),
+    slides.length,
+  );
+
+  function show(next) {
+    index = Math.min(Math.max(next, 1), slides.length);
+    slides.forEach((slide, i) => slide.classList.toggle("active", i === index - 1));
+    bar.style.width = `${(index / slides.length) * 100}%`;
+    counter.textContent = `${String(index).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
+    notes.innerHTML = `<b>Note ${String(index).padStart(2, "0")}</b>${NOTES[index - 1] ?? ""}`;
+    history.replaceState(null, "", `#${index}`);
+    document.getElementById("prev").disabled = index === 1;
+    document.getElementById("next").disabled = index === slides.length;
+  }
+
+  document.getElementById("prev").addEventListener("click", () => show(index - 1));
+  document.getElementById("next").addEventListener("click", () => show(index + 1));
+  document.getElementById("notes-btn").addEventListener("click", () => notes.classList.toggle("on"));
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
+      event.preventDefault();
+      show(index + 1);
+    } else if (event.key === "ArrowLeft" || event.key === "PageUp") {
+      event.preventDefault();
+      show(index - 1);
+    } else if (event.key === "Home") {
+      show(1);
+    } else if (event.key === "End") {
+      show(slides.length);
+    } else if (event.key === "n" || event.key === "N") {
+      notes.classList.toggle("on");
+    }
+  });
+
+  // Touch: a swipe past a fifth of the width advances, so it works on a phone
+  // without a visible control fighting the content.
+  let startX = null;
+  window.addEventListener("touchstart", (event) => {
+    startX = event.touches[0].clientX;
+  }, { passive: true });
+  window.addEventListener("touchend", (event) => {
+    if (startX === null) return;
+    const dx = event.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > window.innerWidth / 5) show(index + (dx < 0 ? 1 : -1));
+    startX = null;
+  }, { passive: true });
+
+  show(index);
+</script>
+</body>
+</html>

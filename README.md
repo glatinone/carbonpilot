@@ -15,8 +15,9 @@ backend/    FastAPI + SQLAlchemy — deterministic engines + Gemini tool-calling
 frontend/   Next.js + Tailwind + Recharts — six screens, English/Indonesian, static export
 ```
 
-> [`DEMO.md`](DEMO.md) — the 3-minute demo script · [`DEPLOY.md`](DEPLOY.md) — deployment
-> topology and its risks · [`DESIGN.md`](DESIGN.md) — the design system the UI is built from
+> [`STATUS.md`](STATUS.md) — what is true right now · [`DEMO.md`](DEMO.md) — the 3-minute demo
+> script · [`DEPLOY.md`](DEPLOY.md) — deployment topology and its risks · [`DESIGN.md`](DESIGN.md) —
+> the design system the UI is built from
 
 ---
 

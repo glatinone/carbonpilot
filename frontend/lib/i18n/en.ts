@@ -38,6 +38,9 @@ const en: Record<string, string> = {
   "status.in_progress": "in progress",
   "status.done": "done",
   "status.cancelled": "cancelled",
+  "sev.high": "high",
+  "sev.medium": "medium",
+  "sev.low": "low",
 
   // --- activity streams ---------------------------------------------------
   // titleize("electricity_kwh") gives "Electricity Kwh", which is wrong in both
@@ -122,7 +125,7 @@ const en: Record<string, string> = {
   "sim.bInterventions": "Interventions",
   "sim.whatIf": "What-if simulator",
   "sim.drag": "drag to model",
-  "sim.sliderMeta": "{stream} · {effort} effort · suggested {pct}%",
+  "sim.sliderMeta": "{stream} · {effort} · suggested {pct}%",
   "sim.bResult": "Result",
   "sim.estimated": "Estimated impact",
   "sim.live": "live",

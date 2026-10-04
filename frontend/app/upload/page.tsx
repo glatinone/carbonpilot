@@ -5,14 +5,10 @@ import { useCallback, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import type { IngestResult, MappingPreview } from "@/lib/types";
 import { ErrorBanner, Footnote, SectionHead } from "@/components/ui";
-
-const SCOPE_LABEL: Record<number, string> = {
-  1: "Scope 1",
-  2: "Scope 2",
-  3: "Scope 3",
-};
+import { useLocale } from "@/lib/i18n";
 
 export default function UploadPage() {
+  const { t } = useLocale();
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<MappingPreview | null>(null);
@@ -64,18 +60,18 @@ export default function UploadPage() {
     <div>
       <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b-2 border-ink pb-4">
         <div>
-          <p className="kicker">Ingest</p>
+          <p className="kicker">{t("up.band")}</p>
           <h1 className="mt-1.5 font-serif text-[26px] font-semibold leading-none tracking-tight text-ink">
-            Upload data
+            {t("up.title")}
           </h1>
         </div>
         <div className="flex items-center gap-4">
           <p className="max-w-[42ch] font-serif text-[15px] leading-snug text-ink-soft">
-            Map first, calculate second — nothing is written until you have seen the interpretation
+            {t("up.lead")}
           </p>
           {file && (
             <button type="button" className="btn-ghost" onClick={reset}>
-              Start over
+              {t("up.startOver")}
             </button>
           )}
         </div>
@@ -115,18 +111,17 @@ export default function UploadPage() {
           }}
         />
         <p className="text-[13px] text-ink">
-          Drop a CSV here, or{" "}
+          {t("up.drop")}{" "}
           <button
             type="button"
             className="text-ink underline decoration-rule-strong underline-offset-4 transition hover:decoration-ink"
             onClick={() => inputRef.current?.click()}
           >
-            choose a file
+            {t("up.choose")}
           </button>
         </p>
         <p className="mx-auto mt-2 max-w-[58ch] text-[12px] leading-relaxed text-ink-muted">
-          Electricity, cloud, travel, fuel or procurement exports — long format (one row per
-          activity) or wide format (one column per stream).
+          {t("up.dropHint")}
         </p>
         {file && (
           <p className="fig mt-3 text-[11px] text-ink-muted">
@@ -135,27 +130,30 @@ export default function UploadPage() {
         )}
       </section>
 
-      {busy === "preview" && <p className="mt-3 text-[12px] text-ink-muted">Mapping columns…</p>}
+      {busy === "preview" && <p className="mt-3 text-[12px] text-ink-muted">{t("up.mapping")}</p>}
 
       {/* Mapping preview */}
       {preview && !result && (
         <>
           <section className="mt-8 border-t border-rule pt-4">
             <SectionHead
-              kicker="Interpretation"
-              title="How the columns were read"
-              note={`${preview.shape === "long" ? "Long format" : "Wide format"} · ${preview.columns.length} columns`}
+              kicker={t("up.bInterpretation")}
+              title={t("up.howRead")}
+              note={t("up.shapeNote", {
+                shape: preview.shape === "long" ? t("shape.long") : t("shape.wide"),
+                n: preview.columns.length,
+              })}
             />
 
             <table className="ledger">
               <thead>
                 <tr>
-                  <th>In the file</th>
-                  <th>Canonical activity type</th>
-                  <th>Category</th>
-                  <th>Scope</th>
-                  <th>Unit</th>
-                  <th>Confidence</th>
+                  <th>{t("up.thInFile")}</th>
+                  <th>{t("up.thCanonical")}</th>
+                  <th>{t("up.thCategory")}</th>
+                  <th>{t("up.thScope")}</th>
+                  <th>{t("up.thUnit")}</th>
+                  <th>{t("up.thConfidence")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -166,7 +164,7 @@ export default function UploadPage() {
                       <td>{mapping.column}</td>
                       <td>{mapping.activity_type}</td>
                       <td>{mapping.category}</td>
-                      <td>{SCOPE_LABEL[mapping.scope] ?? `Scope ${mapping.scope}`}</td>
+                      <td>{t("up.scope", { n: mapping.scope })}</td>
                       <td>{mapping.unit}</td>
                       <td className={uncertain ? "text-alert" : "text-save"}>
                         {Math.round(mapping.confidence * 100)}%
@@ -179,21 +177,18 @@ export default function UploadPage() {
 
             {preview.ambiguous.length > 0 && (
               <p className="mt-4 border-l-2 border-y border-r border-l-alert border-rule px-3 py-2 text-[11.5px] text-alert">
-                Unclear match for {preview.ambiguous.join(", ")} — check these before importing.
+                {t("up.unclear", { list: preview.ambiguous.join(", ") })}
               </p>
             )}
 
             <div className="mt-5">
-              <Footnote>
-                Mapping is deterministic: each column resolves to a canonical activity type, scope
-                and unit before any number is calculated. Nothing has been written yet.
-              </Footnote>
+              <Footnote>{t("up.mapMethod")}</Footnote>
             </div>
           </section>
 
           {/* First rows as they will be parsed */}
           <section className="mt-8 border-t border-rule pt-4">
-            <SectionHead kicker="Preview" title="First rows as they will be parsed" />
+            <SectionHead kicker={t("up.bPreview")} title={t("up.firstRows")} />
             <div className="overflow-x-auto">
               <table className="ledger">
                 <thead>
@@ -221,7 +216,7 @@ export default function UploadPage() {
               disabled={busy !== null}
               onClick={() => void runImport()}
             >
-              {busy === "import" ? "Calculating…" : "Import and calculate"}
+              {busy === "import" ? t("up.calculating") : t("up.import")}
             </button>
           </section>
         </>
@@ -231,20 +226,20 @@ export default function UploadPage() {
       {result && (
         <section className="mt-8 border-t border-rule pt-4">
           <SectionHead
-            kicker="Written"
-            title="Imported"
-            note={result.shape === "long" ? "Long format" : "Wide format"}
+            kicker={t("up.bWritten")}
+            title={t("up.imported")}
+            note={result.shape === "long" ? t("shape.long") : t("shape.wide")}
           />
 
           <div className="grid gap-x-8 gap-y-5 sm:grid-cols-3">
             <div>
-              <p className="kicker">Activity rows</p>
+              <p className="kicker">{t("up.rows")}</p>
               <p className="fig mt-1.5 text-[24px] font-medium leading-none text-save">
                 {result.activities_created.toLocaleString("en-US")}
               </p>
             </div>
             <div>
-              <p className="kicker">Skipped</p>
+              <p className="kicker">{t("up.skipped")}</p>
               <p
                 className={`fig mt-1.5 text-[24px] font-medium leading-none ${
                   result.rows_skipped ? "text-alert" : "text-ink"
@@ -254,9 +249,9 @@ export default function UploadPage() {
               </p>
             </div>
             <div>
-              <p className="kicker">Detected shape</p>
+              <p className="kicker">{t("up.detected")}</p>
               <p className="mt-1.5 text-[13px] text-ink">
-                {result.shape === "long" ? "Long format" : "Wide format"}
+                {result.shape === "long" ? t("shape.long") : t("shape.wide")}
               </p>
             </div>
           </div>
@@ -264,7 +259,7 @@ export default function UploadPage() {
           {result.skipped.length > 0 && (
             <details className="mt-4 border-t border-rule pt-3">
               <summary className="cursor-pointer text-[11.5px] text-alert">
-                Why {result.skipped.length} row(s) were skipped
+                {t("up.whySkipped", { n: result.skipped.length })}
               </summary>
               <ul className="mt-2">
                 {result.skipped.slice(0, 5).map((row, index) => (
@@ -277,21 +272,18 @@ export default function UploadPage() {
           )}
 
           <div className="mt-5">
-            <Footnote>
-              Every imported row was multiplied by a cited emission factor and scored by scope. The
-              dashboard, the signals and the action plan now reflect this data.
-            </Footnote>
+            <Footnote>{t("up.resultNote")}</Footnote>
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2">
             <Link className="btn-primary" href="/">
-              Open dashboard
+              {t("up.openDashboard")}
             </Link>
             <Link className="btn-ghost" href="/insights">
-              See what changed
+              {t("up.seeChanged")}
             </Link>
             <button type="button" className="btn-ghost" onClick={reset}>
-              Upload another file
+              {t("up.another")}
             </button>
           </div>
         </section>

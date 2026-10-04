@@ -5,6 +5,7 @@ import { api } from "@/lib/api";
 import type { ActionItem, Recommendation } from "@/lib/types";
 import { RecommendationCard } from "@/components/RecommendationCard";
 import { EmptyState, ErrorBanner, Footnote, SectionHead, Skeleton } from "@/components/ui";
+import { useLocale } from "@/lib/i18n";
 import { formatTonnes, formatUsd } from "@/lib/format";
 
 const STATUS_STYLE: Record<string, string> = {
@@ -15,6 +16,7 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 export default function ActionsPage() {
+  const { t } = useLocale();
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [actions, setActions] = useState<ActionItem[]>([]);
   const [totals, setTotals] = useState<{ expected_carbon_t: number; expected_cost_usd: number } | null>(null);
@@ -75,16 +77,13 @@ export default function ActionsPage() {
           {/* Ranked actions */}
           <section className="mt-8 border-t border-rule pt-4">
             <SectionHead
-              kicker="Register"
-              title={`Ranked recommendations (${recommendations.length})`}
-              note="carbon × cost × effort, weighted by confidence"
+              kicker={t("act.bRegister")}
+              title={t("act.ranked", { n: recommendations.length })}
+              note={t("act.rankedNote")}
             />
 
             {recommendations.length === 0 ? (
-              <EmptyState
-                title="No recommendations yet"
-                hint="Load activity data, then regenerate the action plan."
-              />
+              <EmptyState title={t("act.emptyTitle")} hint={t("act.emptyHint")} />
             ) : (
               visible.map((recommendation, index) => (
                 <RecommendationCard
@@ -102,7 +101,7 @@ export default function ActionsPage() {
                 className="btn-ghost mt-4 w-full"
                 onClick={() => setShowAll((value) => !value)}
               >
-                {showAll ? "Show top 8 only" : `Show all ${recommendations.length}`}
+                {showAll ? t("act.showTop") : t("act.showAll", { n: recommendations.length })}
               </button>
             )}
           </section>
@@ -110,13 +109,16 @@ export default function ActionsPage() {
           {/* Tracked actions */}
           <section className="mt-8 border-t border-rule pt-4">
             <SectionHead
-              kicker="Plan"
-              title={`Action plan (${actions.length})`}
+              kicker={t("act.bPlan")}
+              title={t("act.planCount", { n: actions.length })}
               note={
                 totals && actions.length > 0
-                  ? `if all executed: −${totals.expected_carbon_t.toLocaleString("en-US", {
-                      maximumFractionDigits: 0,
-                    })} tCO₂e · ${formatUsd(totals.expected_cost_usd)}/yr`
+                  ? t("act.ifAll", {
+                      carbon: totals.expected_carbon_t.toLocaleString("en-US", {
+                        maximumFractionDigits: 0,
+                      }),
+                      cost: formatUsd(totals.expected_cost_usd),
+                    })
                   : undefined
               }
               action={
@@ -127,14 +129,14 @@ export default function ActionsPage() {
                       href={api.exportActionsUrl("md")}
                       title="Download this plan with its expected impact and assumptions"
                     >
-                      Download .md
+                      {t("act.downloadMd")}
                     </a>
                     <a
                       className="btn-ghost px-3 py-1.5 text-[12px]"
                       href={api.exportActionsUrl("csv")}
                       title="Download this plan as a spreadsheet"
                     >
-                      Download .csv
+                      {t("act.downloadCsv")}
                     </a>
                   </div>
                 ) : undefined
@@ -142,9 +144,7 @@ export default function ActionsPage() {
             />
 
             {actions.length === 0 ? (
-              <p className="py-6 text-[12px] text-ink-muted">
-                No actions created yet. Approve a recommendation above to assign it an owner.
-              </p>
+              <p className="py-6 text-[12px] text-ink-muted">{t("act.none")}</p>
             ) : (
               <ul>
                 {actions.map((action) => (
@@ -155,12 +155,15 @@ export default function ActionsPage() {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[12.5px] text-ink">{action.task}</p>
                       <p className="fig mt-0.5 text-[11px] text-ink-muted">
-                        Owner: {action.owner} · expected −{formatTonnes(action.expected_carbon_t)} ·{" "}
-                        {formatUsd(action.expected_cost_usd)}/yr
+                        {t("act.ownerLine", {
+                          owner: action.owner,
+                          carbon: formatTonnes(action.expected_carbon_t),
+                          cost: formatUsd(action.expected_cost_usd),
+                        })}
                       </p>
                     </div>
                     <span className={`chip ${STATUS_STYLE[action.status] ?? ""}`}>
-                      {action.status.replace("_", " ")}
+                      {t(`status.${action.status}`)}
                     </span>
                     {action.status !== "done" && (
                       <button
@@ -168,7 +171,7 @@ export default function ActionsPage() {
                         className="btn-ghost px-3 py-1.5 text-[12px]"
                         onClick={() => void advance(action)}
                       >
-                        {action.status === "open" ? "Start" : "Complete"}
+                        {action.status === "open" ? t("act.start") : t("act.complete")}
                       </button>
                     )}
                   </li>
@@ -189,21 +192,22 @@ export default function ActionsPage() {
 }
 
 function Header({ onReload }: { onReload?: () => void }) {
+  const { t } = useLocale();
   return (
     <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b-2 border-ink pb-4">
       <div>
-        <p className="kicker">Act</p>
+        <p className="kicker">{t("act.band")}</p>
         <h1 className="mt-1.5 font-serif text-[26px] font-semibold leading-none tracking-tight text-ink">
-          Action Plan
+          {t("act.title")}
         </h1>
       </div>
       <div className="flex items-center gap-4">
         <p className="max-w-[40ch] font-serif text-[15px] leading-snug text-ink-soft">
-          Ranked by impact and effort, then tracked to an owner
+          {t("act.lead")}
         </p>
         {onReload && (
           <button type="button" className="btn-ghost" onClick={onReload}>
-            Refresh analysis
+            {t("act.refresh")}
           </button>
         )}
       </div>

@@ -6,12 +6,15 @@ import { api } from "@/lib/api";
 import type { ConstraintSearch, Intervention, ScenarioResult } from "@/lib/types";
 import { ErrorBanner, Footnote, SectionHead, Skeleton } from "@/components/ui";
 import { TrendChart } from "@/components/TrendChart";
-import { formatTonnes, formatUsd, titleize } from "@/lib/format";
+import { useLocale, useStreamLabel } from "@/lib/i18n";
+import { formatTonnes, formatUsd } from "@/lib/format";
 import { useDashboard } from "@/lib/hooks";
 
 type Slider = { activity_type: string; title: string; effort: string; preset: number; costRatio: number };
 
 export default function SimulatorPage() {
+  const { t } = useLocale();
+  const streamLabel = useStreamLabel();
   const { data: dashboard, loading: dashLoading, error: dashError, reload } = useDashboard();
   const [sliders, setSliders] = useState<Slider[]>([]);
   const [values, setValues] = useState<Record<string, number>>({});
@@ -134,7 +137,7 @@ export default function SimulatorPage() {
       <div className="mt-8 grid gap-x-10 gap-y-8 lg:grid-cols-[1.15fr_1fr]">
         {/* Sliders */}
         <section className="border-t border-rule pt-4">
-          <SectionHead kicker="Interventions" title="What-if simulator" note="drag to model" />
+          <SectionHead kicker={t("sim.bInterventions")} title={t("sim.whatIf")} note={t("sim.drag")} />
 
           {dashLoading || sliders.length === 0 ? (
             <Skeleton className="h-72" />
@@ -148,8 +151,11 @@ export default function SimulatorPage() {
                       <div className="min-w-0">
                         <p className="truncate text-[12.5px] text-ink">{slider.title}</p>
                         <p className="text-[10.5px] text-ink-faint">
-                          {titleize(slider.activity_type)} · {slider.effort} effort · suggested{" "}
-                          {slider.preset}%
+                          {t("sim.sliderMeta", {
+                            stream: streamLabel(slider.activity_type),
+                            effort: t(`effort.${slider.effort}`),
+                            pct: slider.preset,
+                          })}
                         </p>
                       </div>
                       <span className="fig shrink-0 text-[13px] text-ink">{value}%</span>
@@ -177,26 +183,30 @@ export default function SimulatorPage() {
 
         {/* Projection */}
         <section className="border-t border-rule pt-4">
-          <SectionHead kicker="Result" title="Estimated impact" note={result ? "live" : undefined} />
+          <SectionHead
+            kicker={t("sim.bResult")}
+            title={t("sim.estimated")}
+            note={result ? t("sim.live") : undefined}
+          />
 
           {runError && <ErrorBanner message={runError} />}
 
           {!result ? (
-            <p className="py-10 text-[12px] leading-relaxed text-ink-muted">
-              Move a slider to simulate. Nothing leaves the baseline until you change something.
-            </p>
+            <p className="py-10 text-[12px] leading-relaxed text-ink-muted">{t("sim.moveSlider")}</p>
           ) : (
             <div>
               <div className="flex items-end justify-between gap-6 border-b border-rule pb-4">
                 <div>
-                  <p className="kicker">Projected footprint</p>
+                  <p className="kicker">{t("sim.projected")}</p>
                   <p className="fig mt-2 text-[34px] font-medium leading-none tracking-tight text-ink">
                     {result.projected.total_tco2e.toLocaleString("en-US", {
                       maximumFractionDigits: 0,
                     })}
                   </p>
                   <p className="mt-1.5 text-[11.5px] text-ink-muted">
-                    from {result.baseline.total_tco2e.toLocaleString("en-US")} tCO₂e
+                    {t("sim.from", {
+                      amount: result.baseline.total_tco2e.toLocaleString("en-US"),
+                    })}
                   </p>
                 </div>
                 <div className="text-right">
@@ -211,7 +221,7 @@ export default function SimulatorPage() {
 
               <div className="grid grid-cols-2 gap-x-8 gap-y-5 border-b border-rule py-4">
                 <div>
-                  <p className="kicker">Annual cost impact</p>
+                  <p className="kicker">{t("sim.annualCost")}</p>
                   <p
                     className={`fig mt-1.5 text-[19px] font-medium leading-none ${
                       result.impact.cost_delta_usd <= 0 ? "text-save" : "text-alert"
@@ -222,16 +232,16 @@ export default function SimulatorPage() {
                   <p className="mt-1 text-[10.5px] text-ink-faint">{result.impact.cost_direction}</p>
                 </div>
                 <div>
-                  <p className="kicker">Interventions</p>
+                  <p className="kicker">{t("sim.interventions")}</p>
                   <p className="fig mt-1.5 text-[19px] font-medium leading-none text-ink">
                     {result.per_intervention.filter((i) => !("error" in i)).length}
                   </p>
-                  <p className="mt-1 text-[10.5px] text-ink-faint">applied together</p>
+                  <p className="mt-1 text-[10.5px] text-ink-faint">{t("sim.applied")}</p>
                 </div>
               </div>
 
               <div className="pt-4">
-                <p className="kicker mb-2">Per intervention</p>
+                <p className="kicker mb-2">{t("sim.perIntervention")}</p>
                 <ul>
                   {result.per_intervention
                     .filter((item) => !("error" in item))
@@ -257,7 +267,7 @@ export default function SimulatorPage() {
 
               <details className="mt-4 border-t border-rule pt-3">
                 <summary className="cursor-pointer text-[11.5px] text-ink-muted">
-                  Assumptions ({result.assumptions.length})
+                  {t("sim.assumptions", { n: result.assumptions.length })}
                 </summary>
                 <ul className="mt-2">
                   {result.assumptions.map((assumption) => (
@@ -275,9 +285,9 @@ export default function SimulatorPage() {
       {dashboard && projectedSeries && (
         <section className="mt-8 border-t border-rule pt-4">
           <SectionHead
-            kicker="Trajectory"
-            title="Recorded vs projected"
-            note="solid = recorded · dashed = projected"
+            kicker={t("sim.bTrajectory")}
+            title={t("sim.recordedVs")}
+            note={t("sim.lineKey")}
           />
           <TrendChart series={dashboard.series} compareSeries={projectedSeries} />
         </section>
@@ -286,18 +296,17 @@ export default function SimulatorPage() {
       {/* Constraint mode */}
       <section className="mt-8 border-t border-rule pt-4">
         <SectionHead
-          kicker="Inverse solve"
-          title="Constraint search"
-          note="reduce carbon by X% without raising cost"
+          kicker={t("sim.bInverse")}
+          title={t("sim.constraint")}
+          note={t("sim.constraintNote")}
         />
         <p className="max-w-[70ch] text-[12.5px] leading-relaxed text-ink-muted">
-          The engine enumerates intervention combinations and returns the ones that satisfy both
-          constraints — the direction a target-setting conversation actually runs.
+          {t("sim.constraintLead")}
         </p>
 
         <div className="mt-5 flex flex-wrap items-end gap-x-6 gap-y-4">
           <div>
-            <label className="kicker mb-2 block">Minimum carbon reduction</label>
+            <label className="kicker mb-2 block">{t("sim.minReduction")}</label>
             <div className="flex items-center gap-3">
               <input
                 type="range"
@@ -313,7 +322,7 @@ export default function SimulatorPage() {
           </div>
 
           <div>
-            <label className="kicker mb-2 block">Maximum cost increase (USD/yr)</label>
+            <label className="kicker mb-2 block">{t("sim.maxCost")}</label>
             <input
               type="number"
               className="input w-40"
@@ -328,7 +337,7 @@ export default function SimulatorPage() {
             onClick={() => void runSearch()}
             disabled={searching}
           >
-            {searching ? "Searching scenarios…" : "Find scenarios"}
+            {searching ? t("sim.searching") : t("sim.find")}
           </button>
         </div>
 
@@ -343,13 +352,13 @@ export default function SimulatorPage() {
             <p className="text-[12.5px] text-ink-muted">
               {search.message}{" "}
               <span className="fig text-ink-faint">
-                ({search.scenarios_evaluated} scenarios evaluated)
+                {t("sim.evaluated", { n: search.scenarios_evaluated })}
               </span>
             </p>
 
             {search.recommended && (
               <div className="mt-4 border-l-2 border-y border-r border-l-save border-rule px-4 py-3">
-                <p className="kicker text-save">Best feasible scenario</p>
+                <p className="kicker text-save">{t("sim.best")}</p>
                 <p className="mt-1.5 font-serif text-[17px] font-semibold leading-snug text-ink">
                   {search.recommended.label}
                 </p>
@@ -375,11 +384,11 @@ export default function SimulatorPage() {
                 <table className="ledger">
                   <thead>
                     <tr>
-                      <th>Scenario</th>
-                      <th>Carbon</th>
-                      <th>Cost</th>
-                      <th>Effort</th>
-                      <th>Confidence</th>
+                      <th>{t("sim.thScenario")}</th>
+                      <th>{t("sim.thCarbon")}</th>
+                      <th>{t("sim.thCost")}</th>
+                      <th>{t("sim.thEffort")}</th>
+                      <th>{t("sim.thConfidence")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -401,9 +410,7 @@ export default function SimulatorPage() {
 
             {search.feasible.length === 0 && search.infeasible.length > 0 && (
               <div className="mt-5 border-t border-rule pt-3">
-                <p className="mb-2 text-[11.5px] text-alert">
-                  No combination satisfies both constraints. Closest alternatives:
-                </p>
+                <p className="mb-2 text-[11.5px] text-alert">{t("sim.noFeasible")}</p>
                 <ul>
                   {search.infeasible.slice(0, 3).map((scenario) => (
                     <li
@@ -424,12 +431,7 @@ export default function SimulatorPage() {
         )}
 
         <div className="mt-5">
-          <Footnote>
-            <b>Method.</b> Linear scaling of each intervention against measured activity data —
-            emission factors held constant, no rebound effect or learning curve modelled. Scenario
-            count and the feasible set are computed, never sampled.{" "}
-            <b>Estimated impact, not a precise forecast.</b>
-          </Footnote>
+          <Footnote>{t("sim.method")}</Footnote>
         </div>
       </section>
     </div>
@@ -437,16 +439,17 @@ export default function SimulatorPage() {
 }
 
 function Header() {
+  const { t } = useLocale();
   return (
     <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b-2 border-ink pb-4">
       <div>
-        <p className="kicker">Simulate</p>
+        <p className="kicker">{t("sim.band")}</p>
         <h1 className="mt-1.5 font-serif text-[26px] font-semibold leading-none tracking-tight text-ink">
-          Scenario Simulator
+          {t("sim.title")}
         </h1>
       </div>
       <p className="max-w-[44ch] font-serif text-[15px] leading-snug text-ink-soft">
-        A linear engine over measured activity data — estimated impact, with every assumption shown
+        {t("sim.lead")}
       </p>
     </header>
   );

@@ -39,6 +39,9 @@ const id: Record<string, string> = {
   "status.in_progress": "berjalan",
   "status.done": "selesai",
   "status.cancelled": "dibatalkan",
+  "sev.high": "tinggi",
+  "sev.medium": "sedang",
+  "sev.low": "rendah",
 
   // --- aliran aktivitas ----------------------------------------------------
   "stream.electricity_kwh": "Listrik",
@@ -122,7 +125,7 @@ const id: Record<string, string> = {
   "sim.bInterventions": "Intervensi",
   "sim.whatIf": "Simulator what-if",
   "sim.drag": "geser untuk memodelkan",
-  "sim.sliderMeta": "{stream} · usaha {effort} · disarankan {pct}%",
+  "sim.sliderMeta": "{stream} · {effort} · disarankan {pct}%",
   "sim.bResult": "Hasil",
   "sim.estimated": "Perkiraan dampak",
   "sim.live": "langsung",

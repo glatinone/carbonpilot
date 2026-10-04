@@ -6,6 +6,7 @@ Companies can already measure their carbon footprint. CarbonPilot answers the ne
 question: **what should we do about it?**
 
 **Live demo:** <https://rakazo-civo.tail1b51ed.ts.net:8443>
+**Pitch deck:** <https://rakazo-civo.tail1b51ed.ts.net:8443/pitch/>
 
 ![Walkthrough](docs/images/walkthrough.gif)
 
@@ -112,6 +113,21 @@ A single FastAPI process serves the UI and the API on one port. No CORS layer, n
 deployment, no vendor onboarding, no annual contract. For the mid-market and regional
 organisations this was built for, that is the difference between adopting a tool and
 starting a procurement project.
+
+### 5. The trade-off is on the page, not in a consultant's deck
+
+`/actions` opens with a matrix: every recommendation plotted on carbon against cost, coloured by
+implementation effort, with the quadrants named. A ranked list answers *which is best*; it never
+answers *why is this above that*.
+
+Each card then carries a computed comparison against the action ranked immediately below it —
+*"224 tCO₂e more saved, $390K/yr costlier, same effort"*. The engine writes that sentence, not the
+model, because the ranking is deterministic and its explanation has to be a property of the data
+rather than a second opinion about it.
+
+Both axes are logarithmic, and the chart says so rather than letting a reader assume
+proportionality. A linear cost axis squashes fifteen actions against the wall to make room for one
+$3.4M outlier; hiding the scale would have been the sloppier choice.
 
 ## How it works
 
@@ -313,6 +329,8 @@ backend/     FastAPI + SQLAlchemy — deterministic engines + Gemini tool-callin
   app/routers/   one module per surface
   scripts/       preflight.py (smoke test), seed helpers
 frontend/    Next.js + Tailwind + Recharts — six screens, static export
+  public/pitch/   the presentation deck: one self-contained HTML file, plus its fonts
+  scripts/        export-pitch-fonts.mjs — copies the app's typefaces into the deck
 docs/        the images used by this README
 ```
 
@@ -322,6 +340,7 @@ docs/        the images used by this README
 | [`DEMO.md`](DEMO.md) | The 3-minute demo script and click order |
 | [`DEPLOY.md`](DEPLOY.md) | Topology, the one-URL decision, and the risks |
 | [`DESIGN.md`](DESIGN.md) | The design system the UI is built from |
+| `frontend/public/pitch/` | The five-slide presentation — served at `/pitch/` |
 
 ## Tests and the demo smoke test
 

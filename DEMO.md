@@ -6,6 +6,10 @@ Run order: backend on :8008, frontend on :3000. Reset the demo data before you p
 cd backend && .venv/Scripts/python -m app.seed --seed-db
 ```
 
+**Presenting.** The deck lives at `/pitch/` on the running app (six slides, arrow keys to move,
+`N` for the speaker notes, `Ctrl-P` for a PDF). It is also the fallback if the venue network
+fails: it is one self-contained folder, and every number on it comes from this same dataset.
+
 ---
 
 ## 0:00–0:22 — Problem
@@ -45,7 +49,12 @@ Point at the mapping table (both rows, with their confidence) and the first rows
 this file again would add 24 duplicate rows and move the hero number off 11,208 mid-presentation.
 If you want to show the import, do it last, then re-run `preflight.py --reset`.
 
-Then go to the **Dashboard** and use the **Ask panel** with:
+Then go to the **Dashboard** and use the **Ask panel**. Open with the hero button — it is the
+constraint question, which is the interaction worth showing:
+
+> *"Reduce our carbon footprint by 15% without increasing costs."*
+
+Then the quieter one:
 
 > *"Where are our biggest emissions?"*
 
@@ -89,9 +98,17 @@ Set min. carbon reduction = **15%**, max cost increase = **0**, click **Find sce
 
 Go to **Action Plan**.
 
-> "Recommendations are ranked by carbon × cost × effort, weighted by confidence — not by whichever
-> bar is biggest. A 460-tonne retrofit that saves $74K and is easy to ship outranks a huge
-> renewable PPA that costs money and takes two years."
+**Start with the matrix at the top.** It plots every recommendation on carbon against cost, with
+effort as the colour, and the quadrants are labelled:
+
+> "This is the decision, not the ranking. Top left is where the cheap large reductions live. That
+> is why a 460-tonne retrofit that saves $74K outranks a much larger renewable PPA that costs money
+> and takes two years — and you can see it rather than take my word for it."
+
+Then scroll to the ranked register and read one card's comparison line out loud:
+
+> "Against the action ranked below it: **224 tonnes more carbon saved, $390K a year costlier, same
+> effort.** That sentence is computed from the same numbers as everything else on this page."
 
 Click **Create Action**, assign the owner.
 
@@ -146,3 +163,5 @@ check. Fix anything it reports, then work through the rest by hand:
 | "Why is cloud only ~2% of emissions?" | Because per-vCPU-hour intensities genuinely are small (Cloud Carbon Footprint). It's about a third of *spend* though (33%) — which is why the decision layer, not the accounting layer, is the product. |
 | "What's fake here?" | The company and its activity data are synthetic. The methodology, the emission factors, the statistics and the engines are real. |
 | "Can it read our real data?" | Yes — CSV upload, long or wide format, with a semantic mapping preview before anything is calculated. Every import is scored by scope: in the demo file, purchased electricity lands in Scope 2 and natural gas in Scope 1. |
+| "So what did the constraint search actually return?" | Ask for −15% carbon and no cost increase and it returns **−33.8% carbon, −$775K/year** from four actions, out of 342 feasible combinations of the 2,098 evaluated. The engine beats the constraint because the cheapest large reductions are cheaper than the baseline, not because it was told to. |
+| "Why is one action ranked above another?" | Every recommendation carries a one-line comparison against the action ranked immediately below it — how much more or less carbon, how much cheaper or costlier, and whether it is easier to ship. It is computed, not narrated. |

@@ -10,12 +10,25 @@ export function formatTonnesShort(value: number): string {
   return value.toFixed(0);
 }
 
+function usdCore(abs: number): string {
+  if (abs >= 1_000_000) return `$${(abs / 1_000_000).toFixed(2)}M`;
+  if (abs >= 1_000) return `$${(abs / 1_000).toFixed(0)}K`;
+  return `$${abs.toFixed(0)}`;
+}
+
 export function formatUsd(value: number): string {
-  const abs = Math.abs(value);
   const sign = value < 0 ? "-" : value > 0 ? "+" : "";
-  if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(2)}M`;
-  if (abs >= 1_000) return `${sign}$${(abs / 1_000).toFixed(0)}K`;
-  return `${sign}$${abs.toFixed(0)}`;
+  return sign + usdCore(Math.abs(value));
+}
+
+/**
+ * Magnitude only, with no sign.
+ *
+ * For comparison clauses where the direction is already a word: "+$524K cheaper"
+ * contradicts itself, and "$524K cheaper" is what the sentence needs.
+ */
+export function formatUsdMagnitude(value: number): string {
+  return usdCore(Math.abs(value));
 }
 
 export function formatUsdFull(value: number): string {

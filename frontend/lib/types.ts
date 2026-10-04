@@ -35,6 +35,34 @@ export type Insight = {
   evidence: Record<string, unknown>;
 };
 
+export type RecommendationCalculation = {
+  activity_value: number;
+  activity_unit: string;
+  factor_value: number | null;
+  factor_source: string | null;
+  factor_year: number | null;
+  factor_uncertainty_pct: number | null;
+  factor_count: number;
+  result_tco2e: number;
+};
+
+/**
+ * The comparison against the recommendation ranked immediately below this one.
+ *
+ * Sign conventions, set by the engine and relied on by the renderer:
+ *   carbon_delta_t      positive = this action saves more carbon
+ *   cost_delta_usd      negative = this action is financially better
+ *   effort_delta        negative = this action is easier to ship
+ */
+export type RecommendationTradeoff = {
+  vs_title: string;
+  vs_rank: number;
+  carbon_delta_t: number;
+  cost_delta_usd: number;
+  effort_delta: number;
+  confidence_delta_pct: number;
+};
+
 export type Recommendation = {
   id: number;
   title: string;
@@ -46,7 +74,10 @@ export type Recommendation = {
   confidence_pct: number;
   score: number;
   status: string;
-  evidence: Record<string, unknown>;
+  evidence: Record<string, unknown> & {
+    calculation?: RecommendationCalculation;
+    tradeoff?: RecommendationTradeoff;
+  };
 };
 
 export type Dashboard = {

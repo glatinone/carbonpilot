@@ -16,13 +16,16 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.engine.anomaly import detect, explain
-from app.engine.calculator import baseline, breakdown
+from app.engine.calculator import activity_volume, baseline, breakdown, emission_factor_trail
 from app.engine.scenario import EFFORT_SCORE, candidate_catalog, run_scenario
 from app.models import Recommendation
 
 W_CARBON = 0.5
 W_COST = 0.3
 W_EFFORT = 0.2
+
+# Ordinal scale for comparing two recommendations' implementation effort.
+EFFORT_ORDER = {"low": 0, "medium": 1, "high": 2}
 
 # Financial impact is log-scaled. A linear scale saturates instantly: a $10k
 # saving and a $3M saving would both clamp to "maximum", so a 7-tonne policy
@@ -51,6 +54,29 @@ def _action_score(carbon_t: float, cost_delta_usd: float, effort: str, confidenc
     effort_norm = EFFORT_SCORE.get(effort, 0.6)
     raw = (W_CARBON * carbon_norm) + (W_COST * _cost_norm(cost_delta_usd)) + (W_EFFORT * effort_norm)
     return round(max(0.0, raw) * (confidence / 100.0) * 100.0, 1)
+
+
+def _neighbour_note(rec: Recommendation, other: Recommendation) -> dict:
+    """Structured comparison against the action ranked immediately below.
+
+    Structured rather than prose because the UI is bilingual: the numbers travel,
+    the wording is chosen per language at render time. Deterministic because the
+    ranking is deterministic — the explanation has to be a property of the data,
+    not a second opinion about it.
+
+    Sign conventions the renderer relies on:
+      carbon_delta_t    positive = this action saves more carbon
+      cost_delta_usd    negative = this action is financially better
+      effort_delta      negative = this action is easier to ship
+    """
+    return {
+        "vs_title": other.title,
+        "vs_rank": None,  # filled in by the caller once ranks are known
+        "carbon_delta_t": round(rec.carbon_impact_t - other.carbon_impact_t, 2),
+        "cost_delta_usd": round(rec.cost_impact_usd - other.cost_impact_usd, 2),
+        "effort_delta": EFFORT_ORDER.get(rec.effort, 1) - EFFORT_ORDER.get(other.effort, 1),
+        "confidence_delta_pct": round(rec.confidence_pct - other.confidence_pct, 1),
+    }
 
 
 def generate(db: Session, company_id: int, replace: bool = True) -> list[Recommendation]:
@@ -130,6 +156,26 @@ def generate(db: Session, company_id: int, replace: bool = True) -> list[Recomme
             "unit": "tCO2e/year (annualised)",
         }
 
+        # The arithmetic behind the number, not just the number. The quantity and
+        # the factor are read back from the stored calculations, so what the card
+        # shows is the factor that was actually applied — re-deriving it here could
+        # print a factor the engine did not use, which is the one thing an audit
+        # trail cannot afford.
+        volume = activity_volume(db, company_id, activity_type)
+        factors = emission_factor_trail(db, company_id, activity_type)
+        if volume["value"] and factors:
+            primary = factors[0]
+            evidence["calculation"] = {
+                "activity_value": volume["value"],
+                "activity_unit": volume["unit"] or primary.get("unit", ""),
+                "factor_value": primary.get("kg_co2e"),
+                "factor_source": primary.get("source"),
+                "factor_year": primary.get("year"),
+                "factor_uncertainty_pct": primary.get("uncertainty_pct"),
+                "factor_count": len(factors),
+                "result_tco2e": intervention["baseline_tco2e"],
+            }
+
         if activity_type in anomaly_types:
             anomaly = next((a for a in anomalies if a["activity_type"] == activity_type), None)
             evidence["anomaly"] = anomaly
@@ -159,6 +205,20 @@ def generate(db: Session, company_id: int, replace: bool = True) -> list[Recomme
         )
 
     created.sort(key=lambda r: r.score, reverse=True)
+
+    # Each action explains itself against the one ranked immediately below it.
+    # That comparison is what turns the ranking into a decision rather than a
+    # sort: "less carbon, but far cheaper and easier to ship" is the sentence a
+    # manager needs before choosing, and it falls out of numbers already computed.
+    for index, recommendation in enumerate(created):
+        if index + 1 >= len(created):
+            continue
+        note = _neighbour_note(recommendation, created[index + 1])
+        note["vs_rank"] = index + 2  # 1-based rank of the action compared against
+        # Evidence is a JSON column: assigning a fresh dict is what SQLAlchemy
+        # detects, so mutate the copy rather than the stored object.
+        recommendation.evidence = {**(recommendation.evidence or {}), "tradeoff": note}
+
     for recommendation in created:
         db.add(recommendation)
     db.commit()

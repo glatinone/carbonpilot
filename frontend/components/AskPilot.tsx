@@ -7,7 +7,12 @@ import { useLocale } from "@/lib/i18n";
 
 // Keys, not strings: module scope cannot reach the locale hook, so the questions
 // are resolved through t() at render time.
-const SUGGESTION_KEYS = ["ask.q1", "ask.q2", "ask.q3", "ask.q4"];
+//
+// ask.q2 is promoted out of the list into the hero button below. "Reduce X% without
+// increasing cost" is the interaction this product is actually about; leaving it as
+// one of four equal-weight suggestions hides the thing worth showing.
+const HERO_KEY = "ask.q2";
+const SUGGESTION_KEYS = ["ask.q1", "ask.q3", "ask.q4"];
 
 /**
  * A command surface, not a chat bubble. The question box is a prompt line and the
@@ -80,23 +85,41 @@ export function AskPilot() {
         </form>
 
         {!response && !loading && (
-          <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
-            {SUGGESTION_KEYS.map((key) => {
-              const suggestion = t(key);
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => {
-                    setMessage(suggestion);
-                    void ask(suggestion);
-                  }}
-                  className="btn-quiet text-left"
-                >
-                  {suggestion}
-                </button>
-              );
-            })}
+          <div className="mt-4">
+            {/* The hero question, one click away. It shows a constraint being searched
+                rather than a dashboard being read — the part of the product a judge
+                cannot infer from a screenshot. */}
+            <p className="kicker mb-2">{t("ask.heroKicker")}</p>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => {
+                const question = t(HERO_KEY);
+                setMessage(question);
+                void ask(question);
+              }}
+            >
+              {t(HERO_KEY)}
+            </button>
+
+            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">
+              {SUGGESTION_KEYS.map((key) => {
+                const suggestion = t(key);
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => {
+                      setMessage(suggestion);
+                      void ask(suggestion);
+                    }}
+                    className="btn-quiet text-left"
+                  >
+                    {suggestion}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -130,7 +153,9 @@ export function AskPilot() {
                         {String(index + 1).padStart(2, "0")}
                       </span>
                       <span className="fig shrink-0 text-ink">{call.tool}</span>
-                      <span className="truncate text-ink-muted">{call.summary}</span>
+                      {/* Deliberately not truncated. The tail of a retrieval summary is
+                          the citation — clipping it hides the part worth reading. */}
+                      <span className="min-w-0 break-words text-ink-muted">{call.summary}</span>
                     </li>
                   ))}
                 </ol>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { ActionItem, Recommendation } from "@/lib/types";
 import { RecommendationCard } from "@/components/RecommendationCard";
+import { DecisionMatrix } from "@/components/DecisionMatrix";
 import { EmptyState, ErrorBanner, Footnote, SectionHead, Skeleton } from "@/components/ui";
 import { useLocale } from "@/lib/i18n";
 import { formatTonnes, formatUsd } from "@/lib/format";
@@ -74,6 +75,16 @@ export default function ActionsPage() {
         </>
       ) : (
         <>
+          {/* Decision matrix — the trade-off, before the ranking that assumes it */}
+          <section className="mt-8 border-t border-rule pt-4">
+            <SectionHead kicker={t("mx.band")} title={t("mx.title")} note={t("mx.note")} />
+            {recommendations.length === 0 ? (
+              <p className="py-6 text-[12px] text-ink-muted">{t("mx.empty")}</p>
+            ) : (
+              <DecisionMatrix recommendations={recommendations} />
+            )}
+          </section>
+
           {/* Ranked actions */}
           <section className="mt-8 border-t border-rule pt-4">
             <SectionHead

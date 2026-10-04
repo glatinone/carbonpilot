@@ -312,6 +312,22 @@ def emission_factor_trail(db: Session, company_id: int, activity_type: str) -> l
     return list(seen.values())
 
 
+def activity_volume(db: Session, company_id: int, activity_type: str) -> dict:
+    """Total measured activity for one type, with the unit it is recorded in.
+
+    Exists so a recommendation can show the arithmetic it came from — the
+    quantity and the factor — rather than only the resulting tonnes. The factor
+    is deliberately not recomputed here: it is read back from the stored
+    calculations via `emission_factor_trail`, because printing a factor that
+    was not the one actually applied would undermine the whole audit trail.
+    """
+    rows = [r for r in _joined(db, company_id) if r[0].activity_type == activity_type]
+    if not rows:
+        return {"value": 0.0, "unit": ""}
+    unit = next((act.unit for act, _, _ in rows if act.unit), "") or rows[0][2].unit
+    return {"value": round(sum(act.value for act, _, _ in rows), 2), "unit": unit}
+
+
 def purge_company(db: Session, company_id: int) -> None:
     db.execute(delete(Calculation).where(
         Calculation.activity_id.in_(select(Activity.id).where(Activity.company_id == company_id))

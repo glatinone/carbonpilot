@@ -4,7 +4,7 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import type { Recommendation } from "@/lib/types";
 import { useLocale, useStreamLabel } from "@/lib/i18n";
-import { EFFORT_COLOR, formatTonnes, formatUsd } from "@/lib/format";
+import { EFFORT_COLOR, formatTonnes, formatUsd, formatUsdMagnitude } from "@/lib/format";
 
 const OWNERS = ["Engineering", "Facilities", "Procurement", "Travel & Ops", "Finance"];
 
@@ -30,7 +30,9 @@ export function RecommendationCard({
   const [created, setCreated] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const evidence = recommendation.evidence as Record<string, unknown>;
+  const evidence = recommendation.evidence;
+  const calculation = evidence.calculation;
+  const tradeoff = evidence.tradeoff;
 
   async function createAction() {
     setBusy(true);
@@ -47,7 +49,7 @@ export function RecommendationCard({
   }
 
   return (
-    <article className="border-b border-rule">
+    <article id={`rec-${recommendation.id}`} className="scroll-mt-6 border-b border-rule">
       <div className="flex flex-col gap-3 py-4 md:flex-row md:items-start md:gap-6">
         <div className="flex shrink-0 items-baseline gap-3 md:w-20 md:flex-col md:gap-0.5">
           <p className="fig text-[10px] text-ink-faint">
@@ -81,6 +83,15 @@ export function RecommendationCard({
               {t("rec.confidence", { pct: recommendation.confidence_pct.toFixed(0) })}
             </span>
           </div>
+
+          {tradeoff && (
+            <p className="mt-2.5 border-l-2 border-l-rule-strong pl-2.5 text-[11.5px] leading-relaxed text-ink-muted">
+              <span className="fig text-ink-faint">
+                {t("rec.tradeoffVs", { rank: String(tradeoff.vs_rank).padStart(2, "0") })}
+              </span>{" "}
+              {tradeoffSentence(t, tradeoff)}
+            </p>
+          )}
         </div>
       </div>
 
@@ -113,6 +124,34 @@ export function RecommendationCard({
 
       {open && (
         <div className="border-t border-rule bg-paper-band/60 px-4 py-4">
+          {calculation && (
+            <div className="mb-4 border-b border-rule pb-3">
+              <p className="kicker mb-2">{t("rec.calculation")}</p>
+              <p className="fig text-[12px] leading-relaxed text-ink">
+                {calculation.activity_value.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                <span className="ml-1 text-ink-muted">{calculation.activity_unit}</span>
+                <span className="mx-2 text-ink-faint">×</span>
+                {calculation.factor_value ?? "—"}
+                <span className="ml-1 text-ink-muted">
+                  kgCO₂e/{calculation.activity_unit}
+                </span>
+                <span className="mx-2 text-ink-faint">=</span>
+                {formatTonnes(calculation.result_tco2e, 2)}
+              </p>
+              <p className="mt-2 text-[11px] leading-relaxed text-ink-muted">
+                {t("rec.calcSource", {
+                  source: calculation.factor_source ?? "—",
+                  year: String(calculation.factor_year ?? "—"),
+                })}
+                {calculation.factor_uncertainty_pct !== null && (
+                  <>
+                    {" · "}
+                    {t("rec.calcUncertainty", { pct: String(calculation.factor_uncertainty_pct) })}
+                  </>
+                )}
+              </p>
+            </div>
+          )}
           <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-[11.5px] sm:grid-cols-3">
             <Evidence label={t("rec.stream")} value={streamLabel(recommendation.activity_type)} />
             <Evidence
@@ -161,4 +200,42 @@ function Evidence({ label, value }: { label: string; value: string }) {
       <dd className="fig truncate text-right text-ink">{value}</dd>
     </div>
   );
+}
+
+type Translate = (key: string, vars?: Record<string, string | number>) => string;
+
+/**
+ * The comparison that makes the ranking a decision rather than a sort.
+ *
+ * Built from whole translated clauses rather than glued-together fragments: each
+ * clause is a complete phrase in its own right, so neither language is forced into
+ * the other's word order. The figures go through the shared formatters, so the
+ * units match the numbers printed directly above them on the same card.
+ */
+function tradeoffSentence(
+  t: Translate,
+  tradeoff: NonNullable<Recommendation["evidence"]["tradeoff"]>,
+): string {
+  const carbon =
+    Math.abs(tradeoff.carbon_delta_t) < 0.5
+      ? t("rec.carbonSame")
+      : tradeoff.carbon_delta_t > 0
+        ? t("rec.carbonMore", { v: formatTonnes(tradeoff.carbon_delta_t) })
+        : t("rec.carbonLess", { v: formatTonnes(Math.abs(tradeoff.carbon_delta_t)) });
+
+  const cost =
+    Math.abs(tradeoff.cost_delta_usd) < 500
+      ? t("rec.costSame")
+      : tradeoff.cost_delta_usd < 0
+        ? t("rec.costCheaper", { v: formatUsdMagnitude(tradeoff.cost_delta_usd) })
+        : t("rec.costCostlier", { v: formatUsdMagnitude(tradeoff.cost_delta_usd) });
+
+  const effort =
+    tradeoff.effort_delta < 0
+      ? t("rec.effortLower")
+      : tradeoff.effort_delta > 0
+        ? t("rec.effortHigher")
+        : t("rec.effortSame");
+
+  return [carbon, cost, effort].join(", ");
 }

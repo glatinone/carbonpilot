@@ -7,6 +7,9 @@
 
 `Measure → Diagnose → Simulate → Act` · *and compare your grid against the region*
 
+**Live demo:** <https://carbonpilot.212-2-251-42.sslip.io> — the UI and the API on one
+origin (FastAPI serves both), so there is no second deployment and no CORS to configure.
+
 ```
 backend/    FastAPI + SQLAlchemy — deterministic engines + Gemini tool-calling agent
 frontend/   Next.js + Tailwind + Recharts — six screens, English/Indonesian, static export

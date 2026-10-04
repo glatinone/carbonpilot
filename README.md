@@ -2,36 +2,150 @@
 
 **An AI carbon decision engine.**
 
-> Companies can already measure their carbon footprint. CarbonPilot answers the
-> next question: **what should we do about it?**
+Companies can already measure their carbon footprint. CarbonPilot answers the next
+question: **what should we do about it?**
 
-`Measure → Diagnose → Simulate → Act` · *and compare your grid against the region*
+**Live demo:** <https://rakazo-civo.tail1b51ed.ts.net:8443>
 
-**Live demo:** <https://rakazo-civo.tail1b51ed.ts.net:8443> — the UI and the API on one
-origin (FastAPI serves both), so there is no second deployment and no CORS to configure.
+![Walkthrough](docs/images/walkthrough.gif)
 
-```
-backend/    FastAPI + SQLAlchemy — deterministic engines + Gemini tool-calling agent
-frontend/   Next.js + Tailwind + Recharts — six screens, English/Indonesian, static export
-```
+*Six screens, one decision loop: ingest, measure, diagnose, simulate, act, and price your
+grid against the region.*
 
-> [`STATUS.md`](STATUS.md) — what is true right now · [`DEMO.md`](DEMO.md) — the 3-minute demo
-> script · [`DEPLOY.md`](DEPLOY.md) — deployment topology and its risks · [`DESIGN.md`](DESIGN.md) —
-> the design system the UI is built from
+`Measure → Diagnose → Simulate → Act` · *and price the same load against 20 regional grids*
 
 ---
 
-## The idea in one paragraph
+## What it does
 
-Sustainability teams have the data (electricity, cloud, travel, fleet, procurement) but it is
-scattered across CSVs, invoices and ERP exports. Even after it is aggregated into a single number
-— *"11,208 tCO₂e/year"* — the question management actually asks is unanswered: **which action
-should we take next, what will it cost, and how confident are we?**
+A sustainability team has the raw data — electricity, cloud, travel, fleet, procurement —
+scattered across CSVs, invoices and ERP exports. Even once it is aggregated into a single
+number (*"11,208 tCO₂e/year"*), the question management actually asks is still unanswered:
+**which action should we take next, what will it cost, and how confident are we?**
 
-CarbonPilot measures the footprint, uses an LLM agent to investigate what moved and why, simulates
+CarbonPilot measures the footprint, investigates what moved and why, simulates
 interventions, and ranks the resulting actions by **carbon impact × financial impact ×
-implementation effort**. Every number is traceable to raw activity data and a cited emission
-factor.
+implementation effort**. Every figure is traceable to a raw activity row and a cited
+emission factor.
+
+| Screen | The question it answers |
+|---|---|
+| `/` Executive dashboard | Where does the footprint come from, and what changed? |
+| `/upload` Ingest | Does the system interpret my file the way I meant it? |
+| `/insights` Diagnose | Why did this number move, and what is the evidence? |
+| `/simulator` Simulate | What if we change something — and does it still meet our constraints? |
+| `/actions` Act | What do we do first, who owns it, and what will it save? |
+| `/japac` Compare | How much of this is our operation, and how much is our grid? |
+
+<details>
+<summary><b>See each screen</b> (click to expand)</summary>
+
+**Executive dashboard** — the footprint, what moved, and the ranked opportunities.
+
+![Executive dashboard](docs/images/01-dashboard.png)
+
+**Ingest** — map first, calculate second. Nothing is written until the interpretation is visible.
+
+![Ingest](docs/images/02-upload.png)
+
+**Diagnose** — each anomaly carries its evidence.
+
+![Diagnose](docs/images/03-insights.png)
+
+**Simulate** — interventions, plus a constraint search over the catalogue.
+
+![Simulate](docs/images/04-simulator.png)
+
+**Act** — recommendations ranked by weighted score, then tracked to an owner.
+
+![Act](docs/images/05-actions.png)
+
+**Compare** — measured electricity priced against 20 JAPAC grids.
+
+![Compare](docs/images/06-japac.png)
+
+</details>
+
+---
+
+## What makes it different
+
+Four claims, each of which you can check in this repository.
+
+### 1. The language model cannot produce a carbon number
+
+This is an enforced architectural rule, not a description of how the code happens to be
+organised. The deterministic engine in `backend/app/engine/` computes every kilogram;
+`backend/app/agent/` only chooses which analyses to run and explains the result. The
+agent's failure mode is therefore *"I could not find that"* — never *"here is a plausible
+number"*.
+
+The industry's AI investment is currently concentrated upstream — extracting data from
+invoices, mapping columns, flagging anomalies (Persefoni's Data Agent, Sweep's Co-Pilot,
+Watershed's data agents, Greenly's EcoPilot). That work makes the *input* trustworthy. It
+does not by itself make the *number* trustworthy, and it is the number a board acts on. We
+could not find a platform that states this separation as a public contract; if one does,
+the comparison belongs here.
+
+### 2. Location is treated as a decision variable, not a footnote
+
+`/japac` prices the company's **measured** electricity against every grid in the region —
+20 grids from the Ember Yearly Electricity Data (CC BY 4.0), each row carrying its own data
+year and generation mix so the intensity has an explanation attached.
+
+The demo company draws 4,304,333 kWh. On Indonesia's grid that is **3,036 tCO₂e** — rank
+**19 of 20**, coal 69%. The identical consumption on New Zealand's grid is **399 tCO₂e**.
+That reframes *"how much do we emit"* into *"where does this change"*, and it is a
+comparison a regional operator can act on.
+
+### 3. Every projection is labelled, and the estimate says so
+
+Scenario maths is linear, and the UI never pretends otherwise: projections are headed
+**Estimated impact** with their assumptions listed. Each emission factor carries an
+`uncertainty_pct`, which is propagated into the recommendation's confidence score rather
+than hidden — so the crudest line (spend-based procurement, ~60% uncertainty, and also the
+largest) visibly scores lower than it otherwise would.
+
+### 4. It deploys as one process, because the buyer here is not an enterprise
+
+A single FastAPI process serves the UI and the API on one port. No CORS layer, no second
+deployment, no vendor onboarding, no annual contract. For the mid-market and regional
+organisations this was built for, that is the difference between adopting a tool and
+starting a procurement project.
+
+## How it works
+
+```
+   raw CSVs ──► mapping ──► deterministic engine ──► ranked decisions
+                  │                  │                      ▲
+                  ▼                  ▼                      │
+            interpretation     kgCO₂e per activity          │
+            preview (human     row, per month,             │
+            confirms)          per scope                   │
+                                     │                      │
+                                     ▼                      │
+                              anomalies + drivers           │
+                                     │                      │
+                                     ▼                      │
+                            scenario + constraint ──────────┘
+                            search over interventions
+```
+
+### The workflow, end to end
+
+1. **Ingest.** A CSV is uploaded. A deterministic mapper proposes how each column maps onto
+   canonical activity types, scopes and units, and the UI shows that interpretation for
+   confirmation. **Nothing is written until a human has seen the mapping.**
+2. **Measure.** Each activity row is multiplied by its cited emission factor. Scope 1, 2 or
+   3 falls out of the activity type, not out of a manual label.
+3. **Diagnose.** A robust median/MAD z-score finds months that moved. Each anomaly is then
+   attributed to the activities that moved with it, so *"cloud compute jumped 165%"* arrives
+   together with *"the weekend share went from 15% to 60%"*.
+4. **Simulate.** Interventions are applied to the stored baseline, and a constraint search
+   (*"cut 15% without increasing cost"*) explores combinations of them.
+5. **Act.** Recommendations are ranked on carbon × cost × effort, weighted by the confidence
+   of their underlying factors, then created as tracked actions with an owner.
+6. **Compare.** The measured electricity is re-priced against every grid in the region.
 
 ## The one architectural rule
 
@@ -99,7 +213,11 @@ ever loses its basis.
 
 ## Two languages, no added dependency
 
-English and Indonesian, switched from the sidebar. The app is a static export, so there is no
+English and Indonesian, switched from the sidebar.
+
+![Dashboard in Indonesian](docs/images/07-dashboard-id.png)
+
+The app is a static export, so there is no
 server to route by locale and a client provider is the only architecture that fits — which also
 means no new package in the build. Dictionaries are flat key maps with resolution order
 *locale → English → the key*, so an incomplete translation degrades to a readable language rather
@@ -184,11 +302,31 @@ the product is the decision, not the size of one bar.
 | `POST` | `/api/chat` | Gemini tool-calling agent (with tool-call trace) |
 | `GET` | `/api/japac` | measured electricity priced against 20 JAPAC grids, with basis and licence |
 | `POST` | `/api/ingest/preview`, `/api/ingest` | CSV upload: mapping preview then calculation |
+| `GET` | `/api/health` | mode, resolved model, and `llm_last_error` |
 
-## Tests
+## Repository map
+
+```
+backend/     FastAPI + SQLAlchemy — deterministic engines + Gemini tool-calling agent
+  app/engine/    calculator, anomaly, scenario, recommender, mapping, japac  (pure, tested)
+  app/agent/     Gemini orchestration, tool declarations, deterministic fallback
+  app/routers/   one module per surface
+  scripts/       preflight.py (smoke test), seed helpers
+frontend/    Next.js + Tailwind + Recharts — six screens, static export
+docs/        the images used by this README
+```
+
+| Document | What it covers |
+|---|---|
+| [`STATUS.md`](STATUS.md) | What is true right now: deployment, verified evidence, open items |
+| [`DEMO.md`](DEMO.md) | The 3-minute demo script and click order |
+| [`DEPLOY.md`](DEPLOY.md) | Topology, the one-URL decision, and the risks |
+| [`DESIGN.md`](DESIGN.md) | The design system the UI is built from |
+
+## Tests and the demo smoke test
 
 ```bash
-cd backend && .venv/Scripts/python.exe -m pytest -q      # 101 tests
+cd backend && .venv/Scripts/python.exe -m pytest -q      # 105 tests
 cd frontend && npm run typecheck
 ```
 
@@ -197,26 +335,79 @@ detected despite inflating its own spread (the reason for MAD over standard devi
 projection plus its saving equals the baseline, and the constraint search only ever returns
 scenarios that satisfy the constraints.
 
-## Honest limitations (state these to judges)
+`scripts/preflight.py` is the pre-presentation check. It exercises every route, the
+constraint search, the upload mapping, the grid benchmarks and the agent in one command —
+and it **fails if a configured key is not actually working**. A dead key produces no error:
+the agent answers correctly from the deterministic router while the UI still claims Gemini.
+That failure mode is invisible by construction, so the check exists to make it visible.
 
-- Emission factors are curated point estimates for prototype use; production would pull live
-  factors from Climatiq or the issuing authority. Each factor carries an `uncertainty_pct`, which
-  is propagated into the recommendation's **confidence** score rather than hidden. A Climatiq
-  client ships (`app/engine/climatiq.py`, opt-in via `CLIMATIQ_API_KEY`) so the agent can
-  corroborate a factor against the live published one and cite it — deliberately off the
-  calculation path, so a rehearsed demo cannot move because a third party changed a number.
-- Scenario maths is linear (`baseline × reduction%`), with no rebound effect or learning curve.
-  The UI labels every projection **Estimated impact** and lists its assumptions.
-- Scope 3 spend-based procurement is the crudest line in the model (60% uncertainty) — and it is
-  the largest, which is exactly why the confidence column exists.
+```bash
+cd backend
+.venv/Scripts/python.exe scripts/preflight.py                    # local
+.venv/Scripts/python.exe scripts/preflight.py --base-url <url>   # any deployment
+```
 
-## Competitive honesty
+## Where it sits next to the rest of the market
 
-Persefoni and Watershed already do carbon accounting, AI copilots, anomaly detection and scenario
-planning. **Do not pitch "the first AI carbon platform."**
+Carbon management software is a real, crowded category — roughly $22B in 2025 growing toward
+$79B by 2030 (Mordor Intelligence). The platforms below are the ones an evaluator would
+actually shortlist. Sourcing is named per row; where a claim is ours rather than a
+published one, it says so.
 
-Pitch instead:
+| Platform | Who it is for | Where its AI points | Typical cost |
+|---|---|---|---|
+| **Watershed** | Large enterprises running a climate programme; Verdantix 2026 Green Quadrant leader | Data agents for cleaning and analysis; a reduction "Action Engine" with a project-funding marketplace | Quote-based; third-party estimates commonly $50k–$250k+/yr |
+| **Persefoni** | Finance and audit-driven buyers; PCAF financed emissions | Data Agent (mapping), Analytics Agent (natural-language analysis over the ledger), Copilot; ledger built for audit | Free Pro tier; paid tiers reported around $55k+/yr |
+| **Sweep** | Multi-entity groups with CSRD obligations; ranked first of 17 in the 2026 IDC MarketScape | AI Co-Pilot for data capture and emissions-factor application across value-chain trees | Quote-based |
+| **SINAI Technologies** | Heavy industry that already knows roughly where it emits | Built the opposite way round: decarbonisation planning and ROI-positive abatement modelling on top of accounting | Quote-based |
+| **Greenly** | SMB and mid-market first inventories | EcoPilot walks non-experts through collection, footprint and reporting | Published entry pricing; roughly $600–$2,000/yr bands |
+| **Normative** | Enterprises with complex supply chains | Science-led factor depth and supplier data modelling | Quote-based, plus a free SME calculator |
+| **Climatiq** | Developers, not end users | No UI — a carbon calculation API with 900k+ emission factors | Free tier; paid from ~€2,000/yr |
+| **CarbonPilot** (this repo) | Regional mid-market; a demonstration, not a product | Downstream of ingestion: the model chooses and explains, the engine computes | Open source |
 
-> *Existing platforms help companies measure and manage carbon. CarbonPilot focuses on the
-> decision moment: which action should we take next, why, and what carbon and financial impact
-> can we expect — with every estimate traceable to source data.*
+### What that comparison honestly means
+
+**The reduction-recommendation layer is not novel.** Watershed's Action Engine, SINAI's
+planning focus, Atmoz's "Resolve" step and Carbon Decision AI's ranked decarbonisation plan
+all occupy the space CarbonPilot sits in. A pitch that opens with *"the first AI carbon
+platform"* is false, and an evaluator will know it.
+
+What is defensible here is narrower, and worth stating precisely:
+
+- **The separation is enforced rather than asserted.** The agent cannot emit a number,
+  because the number does not come from the agent. Competitors' AI is aimed at the input
+  pipeline; this is a contract about the output.
+- **Regional grid comparison is a first-class surface**, not a location-based factor hidden
+  inside Scope 2.
+- **No procurement project.** One process, no contract, and the whole thing is auditable
+  precisely because it is small.
+
+And the honest other side — what this is not:
+
+- **Not audit-grade.** Persefoni's ledger carries SOC 1 and SOC 2 certifications and
+  document-level lineage. This has neither and should not be presented as if it did.
+- **No compliance reporting.** No CSRD/ESRS, SB 253, CDP or ISSB outputs. Those are a
+  product in their own right, and several platforms above do them well.
+- **No supplier portal, no ERP connectors, no multi-tenancy, no SSO.** Every enterprise
+  table-stake is absent.
+- **Curated factors.** Point estimates with stated uncertainty, not a versioned library of
+  the size Climatiq publishes.
+- **Linear scenario maths.** No rebound effect, no learning curve, no marginal abatement
+  cost curve.
+
+This is a demonstration of one idea — that the decision layer deserves the same rigour as
+the measurement layer — not a competitor to a funded platform.
+
+## Data and licences
+
+- **Ember Yearly Electricity Data** (via the World Power Monitor open API) — grid
+  intensities, **CC BY 4.0**. Basis, data year and generation mix are carried on every row
+  and shown in the UI.
+- **UK Government GHG Conversion Factors 2026** — curated activity factors for the prototype
+  inventory.
+- **Cloud Carbon Footprint** methodology — per-vCPU-hour cloud intensities.
+- **Climatiq**'s API is wired up as an optional corroboration path
+  (`app/engine/climatiq.py`, opt-in via `CLIMATIQ_API_KEY`). With a key, the agent can check a
+  curated factor against the live published one and cite it. Without one, the tool says so.
+  Curated factors stay the calculation source of truth either way, so a rehearsed demo cannot
+  move because a third party changed a number.

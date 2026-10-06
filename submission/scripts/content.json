@@ -1,0 +1,225 @@
+{
+  "meta": {
+    "event": "Google Cloud AI Builder Cup 2026 — JAPAC hackathon by Hack2skill",
+    "product": "CarbonPilot",
+    "tagline": "From carbon accounting to carbon action.",
+    "live_url": "https://rakazo-civo.tail1b51ed.ts.net:8443",
+    "deadline": "2026-10-18",
+    "anchor_numbers": {
+      "footprint_tco2e": "11,208",
+      "records": "168",
+      "months": "12",
+      "scope3_pct": "61.1",
+      "kwh": "4,304,333",
+      "id_tco2e": "3,036",
+      "id_rank": "19",
+      "nz_tco2e": "399",
+      "coal_pct": "69",
+      "reduction_pct": "33.8",
+      "saved_tco2e": "3,790",
+      "saved_usd": "775,000",
+      "feasible": "342",
+      "evaluated": "2,098",
+      "tests": "105",
+      "tools": "13"
+    }
+  },
+  "deck": [
+    {
+      "kind": "cover",
+      "kicker": "JAPAC AI Builder Cup 2026 · Submission",
+      "title": "CarbonPilot",
+      "lead": "An AI carbon decision engine. It turns fragmented operational data into prioritised, financially-aware decarbonisation actions — and every number it prints is traceable to a calculation engine, never to the language model.",
+      "loop": ["Measure", "Diagnose", "Simulate", "Act"],
+      "url": "rakazo-civo.tail1b51ed.ts.net:8443",
+      "foot": "Working prototype · Gemini-driven agent over a deterministic engine · six screens, one loop",
+      "notes": "Open with the problem, not the product. The live URL is on the cover; if the venue network fails, this deck is the fallback."
+    },
+    {
+      "kind": "problem",
+      "kicker": "The problem",
+      "title": "Companies can already measure their carbon. They still cannot decide what to do about it.",
+      "bullets": [
+        {"lead": "The data exists, the decision does not.", "text": "Electricity, cloud, travel, fleet and procurement sit in CSVs and ERP exports. Aggregating them produces a number, not a plan."},
+        {"lead": "Reporting is a backward view.", "text": "A footprint tells you where you were. Management asks what changes next — and what it will cost."},
+        {"lead": "Carbon and money are decided separately.", "text": "The largest reduction is often the most expensive, and nobody can see the trade-off in one place."}
+      ],
+      "figures": [
+        {"kicker": "Demo footprint", "value": "11,208", "unit": "tCO₂e / yr"},
+        {"kicker": "Scope 3 share", "value": "61.1", "unit": "%"}
+      ],
+      "say": "Knowing you emit eleven thousand tonnes does not tell you what to do next.",
+      "foot": "Demo company: 168 activity records, 12 months, across electricity, cloud, travel, fleet and procurement.",
+      "notes": "Name the persona: a sustainability or operations manager who has the data and keeps being asked ‘what do we do next?’ Do not say ‘all companies’."
+    },
+    {
+      "kind": "finding",
+      "kicker": "The motivating finding",
+      "title": "The same load is 3,036 tonnes here — and 399 in New Zealand. Location is a decision variable, not a footnote.",
+      "figures": [
+        {"kicker": "Load", "value": "4,304,333", "unit": "kWh / yr"},
+        {"kicker": "Indonesia", "value": "3,036", "unit": "tCO₂e · rank 19/20 · coal 69%", "tone": "alert"},
+        {"kicker": "New Zealand", "value": "399", "unit": "tCO₂e"}
+      ],
+      "bullets": [
+        {"lead": "Benchmarked, not estimated.", "text": "Twenty JAPAC grids from Ember Yearly Electricity Data (CC BY 4.0), one documented basis, labelled explicitly."},
+        {"lead": "Grid choice outweighs most single actions.", "text": "No reporting tool surfaces this — it sits in a footnote of the accounting exercise today."}
+      ],
+      "foot": "Basis: full-lifecycle CO₂e intensity per kWh, Ember Yearly Electricity Data (CC BY 4.0). The product labels basis on every row; benchmark and inventory bases are never averaged together.",
+      "notes": "Land the JAPAC relevance: a regional benchmark is exactly what a JAPAC judge should expect — and the finding is real, not a demo artifact."
+    },
+    {
+      "kind": "solution",
+      "kicker": "What it does",
+      "title": "It answers the question after the footprint.",
+      "steps": [
+        {"name": "Ingest", "text": "A CSV is mapped to canonical activity types and scopes. The interpretation is shown for confirmation before anything is written."},
+        {"name": "Diagnose", "text": "A robust median/MAD test finds the months that moved, then attributes each one to the activities that moved with it."},
+        {"name": "Simulate", "text": "Interventions are applied to the stored baseline; a constraint search explores combinations of them."},
+        {"name": "Act", "text": "Recommendations are ranked on carbon × cost × effort, weighted by factor confidence, and tracked to an owner."}
+      ],
+      "notes": "Walk the loop once, top to bottom. Each stage is its own engine and its own screen — six screens in total."
+    },
+    {
+      "kind": "rule",
+      "kicker": "The one architectural rule",
+      "title": "The language model never produces a carbon number.",
+      "left_lead": "The engine computes. The agent explains.",
+      "left": "Every kilogram of CO₂ is computed by a deterministic, unit-tested engine in app/engine/. The model chooses which analyses to run and explains the result — so its failure mode is “I could not find that”, never “here is a plausible number”.",
+      "right_lead": "Every recommendation shows its arithmetic",
+      "right": "the quantity, the factor, the factor’s source and year, and the uncertainty. A judge can ask why a factor is defensible and get a cited answer, not a recollection.",
+      "notes": "This is the answer to ‘is this just an LLM wrapper?’. Land it before showing any number."
+    },
+    {
+      "kind": "demo",
+      "kicker": "The interaction worth showing",
+      "title": "“Reduce our footprint 15% without increasing operating cost.”",
+      "lead": "One sentence in. A constraint search over 2,098 scenario combinations out. Real result, from the deployed instance:",
+      "figures": [
+        {"kicker": "Carbon reduction", "value": "33.8", "unit": "%", "tone": "save"},
+        {"kicker": "Carbon saved", "value": "3,790", "unit": "tCO₂e / yr", "tone": "save"},
+        {"kicker": "Cost impact", "value": "−$775", "unit": "K / yr", "tone": "save"},
+        {"kicker": "Feasible scenarios", "value": "342", "unit": "of 2,098"}
+      ],
+      "table": {
+        "caption": "What the engine put in the plan",
+        "rows": [
+          ["Renewable PPA for purchased electricity", "80%"],
+          ["Mandate rail over short-haul flights", "45%"],
+          ["Electrify the delivery fleet", "40%"],
+          ["Supplier engagement and low-carbon sourcing", "10%"]
+        ]
+      },
+      "say": "Asked for 15%. It returned a plan that clears the carbon constraint and saves money — and can say why each action is in it.",
+      "foot": "Constraint search over a stored baseline; every scenario in the result satisfies both constraints by construction (tested).",
+      "notes": "Ask for the 15% out loud, then read the result out loud. The 33.8% and the $775K saving are real, from the deployed instance."
+    },
+    {
+      "kind": "tech",
+      "kicker": "How it works",
+      "title": "An agent that orchestrates tools, over an engine that cannot be argued with.",
+      "left": [
+        {"lead": "13 tools — and the first turn is forced to call one.", "text": "The model cannot answer a quantitative question from its own head."},
+        {"lead": "Cited retrieval.", "text": "A pure-stdlib BM25 ranker pulls the methodology passages behind a claim, so “why is that factor defensible” is answered from a source of record."},
+        {"lead": "One process.", "text": "FastAPI serves the UI and the API on a single port: no CORS layer, no second deployment, no vendor onboarding."}
+      ],
+      "right": [
+        {"lead": "Stack", "text": "Next.js static export · FastAPI · SQLite · Gemini over a gateway key · i18n EN/ID with no extra dependency."},
+        {"lead": "Deployment", "text": "One systemd unit behind a Tailscale Funnel today; Cloud Run / Firebase is the judging-path deployment, kept to a single command."},
+        {"lead": "Honest scope", "text": "No compliance reporting (CSRD, SB 253, CDP), no supplier portal or ERP connectors, curated point factors, linear scenario maths — stated, not discovered."}
+      ],
+      "notes": "Do not oversell the agent. Say exactly what it does: forced first tool call, retrieval that cites, and the smoke test that fails when the key quietly stops working."
+    },
+    {
+      "kind": "verified",
+      "kicker": "Verified, not claimed",
+      "title": "105 tests. A smoke test that fails on a working-looking key. One process.",
+      "bullets": [
+        {"lead": "Behaviour contracts, not snapshots.", "text": "A projection plus its saving equals the baseline. Constraint search only ever returns scenarios that satisfy the constraints. 105 tests, runnable without credentials."},
+        {"lead": "Preflight makes invisible failure visible.", "text": "A dead key produces no error — it produces a correct answer from the deterministic router while the UI still claims the model. The smoke test exists to catch exactly that."},
+        {"lead": "Every claim checkable.", "text": "pytest, tsc --noEmit, production build and preflight outputs are in the repository with the commands that produced them."}
+      ],
+      "foot": "Verified 2026-10-04: backend 32s · frontend typecheck + static export ~1 min · preflight READY, 13 OK.",
+      "notes": "This is the credibility slide: every acceptance claim in this deck maps to a command in the repo."
+    },
+    {
+      "kind": "market",
+      "kicker": "Position",
+      "title": "From carbon accounting to carbon action.",
+      "table": {
+        "caption": "The category, conceded and narrowed",
+        "rows": [
+          ["Today", "CarbonPilot"],
+          ["Measure", "Measure"],
+          ["Report", "Diagnose"],
+          ["Analyse", "Simulate"],
+          ["—", "Act"],
+          ["Ranked by size", "Ranked by carbon × cost × effort"]
+        ],
+        "mono_last": true
+      },
+      "say": "Watershed, Persefoni, Sweep and SINAI already do accounting, ingestion and scenario planning. We do not claim to be the first AI carbon platform. The narrower claim: their AI targets the input pipeline — ours is a contract on the output.",
+      "close": "Carbon reporting tells you where you are. CarbonPilot tells you what to do next.",
+      "foot": "Demonstration build — stated boundaries, not avoided ones.",
+      "notes": "Concede the category first; naming the incumbents makes the narrow claim credible. Then close on the line."
+    },
+    {
+      "kind": "impact",
+      "kicker": "Impact & community",
+      "title": "Built for grids that make decarbonisation hard.",
+      "bullets": [
+        {"lead": "A public facility, not a slide.", "text": "Twenty JAPAC grids, one documented basis, built on CC BY 4.0 open data — reusable by any team in the region."},
+        {"lead": "Bilingual EN/ID.", "text": "Reach into regional mid-market teams that reporting platforms under-serve."},
+        {"lead": "A pattern that generalises.", "text": "Wherever a model could plausibly invent a number, don’t let it. A deterministic engine with an explaining agent is the audit-grade shape for quantified AI."}
+      ],
+      "figures": [
+        {"kicker": "Grids benchmarked", "value": "20", "unit": "JAPAC"},
+        {"kicker": "Languages", "value": "2", "unit": "EN / ID"},
+        {"kicker": "Tests green", "value": "105", "unit": "pytest"}
+      ],
+      "notes": "Impact here is honest: the benchmark is open data, the product is bilingual, and the engine-over-model rule is the transferable idea."
+    },
+    {
+      "kind": "roadmap",
+      "kicker": "Scaling path",
+      "title": "From CSV to the mid-market ERP.",
+      "bullets": [
+        {"lead": "Connectors over CSVs.", "text": "AWS / GCP / Azure billing, Xero, SAP — per-account mapping on the same ingestion pipeline."},
+        {"lead": "Compliance modules on the same ledger.", "text": "CSRD, SB 253, CDP reports from the same audit trail, not a separate tool."},
+        {"lead": "Multi-tenancy and factor services.", "text": "Climatiq is wired and config-ready; isolation is the next engineering step, not an open question."},
+        {"lead": "Trivial ops by construction.", "text": "Static export + one process today; Cloud Run / Firebase is the scale path with no architectural change."}
+      ],
+      "foot": "The boundaries in this deck are the honest ones: no compliance reporting yet, curated factors, linear scenario maths.",
+      "notes": "Feasibility and scalability in one slide: the next steps are additions to a pipeline that already exists."
+    },
+    {
+      "kind": "closing",
+      "kicker": "The ask",
+      "title": "From carbon accounting to carbon action.",
+      "loop": ["Measure", "Diagnose", "Simulate", "Act"],
+      "url": "rakazo-civo.tail1b51ed.ts.net:8443",
+      "say": "CarbonPilot — an AI carbon decision engine for JAPAC, built on Google AI, submitted to the AI Builder Cup 2026.",
+      "foot": "Prototype live · repository public at submission · proposal deck and 3-minute demo video included.",
+      "notes": "End on the loop and the URL. The repo goes public the moment the submission goes in."
+    }
+  ],
+  "explainer": [
+    {"id": "n1", "text": "CarbonPilot is an AI carbon decision engine.", "est_s": 4},
+    {"id": "n2", "text": "Most companies can already measure their carbon. Our demo company emits eleven thousand, two hundred and eight tonnes of CO2 a year. What they cannot do is decide what to do about it.", "est_s": 13},
+    {"id": "n3", "text": "Location matters more than most actions. The same four point three million kilowatt hours costs three thousand and thirty six tonnes on Indonesia's grid — rank nineteen of twenty, coal at sixty nine percent — and just three hundred and ninety nine tonnes in New Zealand.", "est_s": 17},
+    {"id": "n4", "text": "CarbonPilot turns that into a decision loop: measure, diagnose, simulate, act.", "est_s": 6},
+    {"id": "n5", "text": "One rule keeps the loop trustworthy: the language model never produces a carbon number. A deterministic engine computes every kilogram. The model chooses the analysis, and explains the result.", "est_s": 13},
+    {"id": "n6", "text": "Ask it to cut the footprint fifteen percent without raising operating cost, and it returns a thirty three point eight percent reduction — and seven hundred and seventy five thousand dollars a year saved.", "est_s": 12},
+    {"id": "n7", "text": "From carbon accounting to carbon action. This is CarbonPilot.", "est_s": 6}
+  ],
+  "demo": [
+    {"id": "d1", "screen": "intro", "text": "This is CarbonPilot — an AI carbon decision engine. It is a working prototype, live, and every number you are about to see comes from the deployed instance.", "est_s": 11},
+    {"id": "d2", "screen": "dashboard", "text": "The dashboard opens with the statement: eleven thousand, two hundred and eight tonnes a year, sixty one percent of it Scope 3 — procurement, travel, cloud. Cloud is just two point four percent of the carbon, but a third of the spend. That mismatch is the conversation.", "est_s": 19},
+    {"id": "d3", "screen": "upload", "text": "Ingest maps first, calculates second. The CSV columns are mapped to canonical activities and scopes, the interpretation is previewed, and nothing is written until it has been confirmed.", "est_s": 13},
+    {"id": "d4", "screen": "insights", "text": "Diagnose finds what actually moved. A robust outlier test flags the months that changed, and attributes each one to the activities that changed with it — with the arithmetic shown on every row.", "est_s": 14},
+    {"id": "d5", "screen": "simulator", "text": "Simulate is the core. One sentence in: reduce the footprint fifteen percent without increasing operating cost. The engine evaluates twenty one hundred scenarios and returns a plan: thirty three point eight percent reduction, three thousand seven hundred and ninety tonnes saved, and seven hundred seventy five thousand dollars a year cheaper.", "est_s": 24},
+    {"id": "d6", "screen": "actions", "text": "Act turns it into a register. Every action is ranked on carbon, cost and effort, plotted on the matrix, and every recommendation states its trade-off — and its arithmetic.", "est_s": 13},
+    {"id": "d7", "screen": "japac", "text": "And the JAPAC view prices the same load against twenty regional grids — so location stops being a footnote and becomes a decision. The whole product is bilingual, English and Bahasa Indonesia.", "est_s": 15},
+    {"id": "d8", "screen": "close", "text": "From carbon accounting to carbon action. CarbonPilot, for the Google Cloud AI Builder Cup 2026.", "est_s": 9}
+  ]
+}

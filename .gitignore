@@ -34,3 +34,8 @@ next-env.d.ts
 .idea/
 .DS_Store
 Thumbs.db
+
+# --- submission tooling / scratch (regenerable) ---
+submission/.venv-tools/
+submission/frames/
+submission/qa/

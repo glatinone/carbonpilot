@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>CarbonPilot — explainer</title>
+<style>
+  :root {
+    --paper:#fbfaf7; --band:#f6f5f1;
+    --ink:#14150f; --soft:#33332e; --muted:#6d6d63; --faint:#9a9a8e;
+    --rule:#e2e0d8; --strong:#c9c6ba;
+    --save:#1c4b36; --alert:#9c5a12;
+    --serif:"Source Serif 4", Georgia, serif;
+    --sans:"Inter","Segoe UI",sans-serif;
+    --mono:"IBM Plex Mono",Consolas,monospace;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { width:1920px; height:1080px; overflow:hidden; background:var(--paper); }
+  body { position:relative; color:var(--ink); font-family:var(--sans); }
+  .scene {
+    position:absolute; inset:0; padding:96px 150px 84px;
+    display:flex; flex-direction:column; justify-content:center;
+    opacity:0;
+  }
+  .scene.active { opacity:1; }
+  [data-fade] { opacity:0; }
+  .kicker {
+    font-family:var(--mono); font-size:15px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--faint); margin-bottom:34px;
+  }
+  h1 { font-family:var(--serif); font-weight:700; font-size:118px; line-height:1.0; letter-spacing:-.02em; }
+  h2 { font-family:var(--serif); font-weight:700; font-size:60px; line-height:1.12; letter-spacing:-.015em; max-width:1300px; }
+  .lead { font-family:var(--serif); font-size:27px; line-height:1.5; color:var(--soft); margin-top:26px; max-width:1150px; }
+  .rule { height:2px; background:var(--ink); }
+  .hair { height:1px; background:var(--rule); }
+  .mr { margin-top:34px; }
+  .mt2 { margin-top:56px; }
+  .figl { display:flex; flex-direction:column; border-top:5px solid var(--ink); padding-top:22px; min-width:340px; }
+  .figl dt { font-family:var(--mono); font-size:14px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); }
+  .figl dd { font-family:var(--mono); font-size:74px; font-weight:600; line-height:1.05; margin-top:8px; letter-spacing:-.02em; }
+  .figl dd small { font-size:.38em; font-weight:400; color:var(--muted); margin-left:10px; letter-spacing:0; }
+  .save { color:var(--save); }
+  .alert { color:var(--alert); }
+  .say { font-family:var(--serif); font-size:26px; line-height:1.45; color:var(--soft); border-left:4px solid var(--ink); padding-left:26px; margin-top:40px; max-width:900px; }
+  .flow { font-family:var(--mono); font-size:44px; font-weight:600; }
+  .flow .arr { color:var(--strong); padding:0 22px; }
+  .bars { display:flex; flex-direction:column; gap:42px; margin-top:64px; }
+  .barline { display:flex; align-items:center; gap:44px; }
+  .barline .lbl { font-family:var(--mono); font-size:15px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink); width:560px; flex:0 0 560px; }
+  .barline .lbl small { display:block; color:var(--faint); font-size:13px; letter-spacing:.08em; margin-top:6px; }
+  .bar { width:0; height:34px; position:relative; }
+  .bar .val { position:absolute; left:18px; top:50%; transform:translateY(-50%); font-family:var(--mono); font-size:20px; font-weight:600; color:#fff; }
+  .two { display:flex; gap:130px; }
+  .two .col { flex:1; max-width:760px; }
+  .two .lbl { font-family:var(--mono); font-size:14px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); margin-bottom:16px; }
+  .two .body { font-family:var(--sans); font-size:24px; line-height:1.5; color:var(--soft); }
+  .url { font-family:var(--mono); font-size:21px; color:var(--muted); margin-top:46px; }
+  .close-say { font-family:var(--serif); font-size:40px; line-height:1.3; margin-top:48px; color:var(--soft); max-width:1100px; }
+  .chrome { position:absolute; left:150px; right:150px; top:58px; display:flex; justify-content:space-between;
+    font-family:var(--mono); font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); }
+  .prog { position:absolute; left:150px; right:150px; bottom:44px; height:3px; background:var(--rule); }
+  .prog i { display:block; height:100%; background:var(--ink); width:0; }
+</style>
+</head>
+<body>
+
+<div class="chrome"><span>CarbonPilot</span><span>JAPAC AI Builder Cup 2026</span></div>
+<div class="prog"><i id="prog"></i></div>
+
+<!-- S1 cover -->
+<section class="scene" id="sc1">
+  <p class="kicker" data-fade>JAPAC AI Builder Cup 2026 · Working prototype</p>
+  <h1 data-fade data-delay="0.25">CarbonPilot</h1>
+  <div class="hair mr" data-fade data-delay="0.6" style="width:100%"></div>
+  <p class="lead" data-fade data-delay="0.8">An AI carbon decision engine. It turns fragmented operational data
+    into prioritised, financially-aware decarbonisation actions — and every number it prints is traceable
+    to a calculation engine, never to the language model.</p>
+  <p class="flow mr" data-fade data-delay="1.1">Measure <span class="arr">→</span> Diagnose <span class="arr">→</span> Simulate <span class="arr">→</span> Act</p>
+  <p class="url" data-fade data-delay="1.35">rakazo-civo.tail1b51ed.ts.net:8443</p>
+</section>
+
+<!-- S2 problem -->
+<section class="scene" id="sc2">
+  <p class="kicker" data-fade>The problem</p>
+  <h2 data-fade data-delay="0.3">Companies can already measure their carbon.</h2>
+  <h2 data-fade data-delay="0.55" style="color:var(--soft);font-weight:600">They still cannot decide what to do about it.</h2>
+  <div style="display:flex;gap:140px;align-items:flex-end;margin-top:70px">
+    <div class="figl" data-fade data-delay="1.0">
+      <dt>Demo footprint</dt><dd class="mono" id="cKWH" data-count="11208">0<small>tCO₂e / yr</small></dd>
+    </div>
+    <div class="figl" data-fade data-delay="1.25">
+      <dt>Scope 3 share</dt><dd id="cSc3" data-count="61.1">0<small>%</small></dd>
+    </div>
+  </div>
+  <p class="say" data-fade data-delay="1.6">Knowing you emit eleven thousand tonnes does not tell you what to do next.</p>
+</section>
+
+<!-- S3 location -->
+<section class="scene" id="sc3">
+  <p class="kicker" data-fade>The motivating finding</p>
+  <h2 data-fade data-delay="0.3">The same 4,304,333 kWh load — priced by grid, not by effort.</h2>
+  <div class="bars">
+    <div class="barline" data-fade data-delay="0.9">
+      <span class="lbl">Indonesia<small>rank 19 of 20 · coal 69%</small></span>
+      <div class="bar" data-bar="1.0" style="background:var(--alert)"><span class="val">3,036 tCO₂e</span></div>
+    </div>
+    <div class="barline" data-fade data-delay="1.25">
+      <span class="lbl">New Zealand<small>rank 1 of 20</small></span>
+      <div class="bar" data-bar="0.131" style="background:var(--save)"><span class="val">399 tCO₂e</span></div>
+    </div>
+  </div>
+  <p class="say" data-fade data-delay="1.7">Location is a decision variable, not a footnote.</p>
+</section>
+
+<!-- S4 loop -->
+<section class="scene" id="sc4">
+  <p class="kicker" data-fade>What it does</p>
+  <h2 data-fade data-delay="0.3">One loop, from data to decision.</h2>
+  <p class="flow mt2" data-fade data-delay="0.7">Measure <span class="arr">→</span> Diagnose <span class="arr">→</span> Simulate <span class="arr">→</span> Act</p>
+  <div class="hair mr" data-fade data-delay="1.0" style="width:100%"></div>
+  <div style="display:flex;gap:130px;margin-top:44px">
+    <div class="col"><p class="lbl" data-fade data-delay="1.15">01 · Ingest</p><p class="body" data-fade data-delay="1.3">CSV mapped to canonical activities; interpretation confirmed before anything is written.</p></div>
+    <div class="col"><p class="lbl" data-fade data-delay="1.4">02 · Diagnose</p><p class="body" data-fade data-delay="1.55">Robust median/MAD test finds the months that moved, then attributes drivers.</p></div>
+  </div>
+  <div style="display:flex;gap:130px;margin-top:34px">
+    <div class="col"><p class="lbl" data-fade data-delay="1.65">03 · Simulate</p><p class="body" data-fade data-delay="1.8">Interventions applied to the stored baseline; a constraint search explores combinations.</p></div>
+    <div class="col"><p class="lbl" data-fade data-delay="1.9">04 · Act</p><p class="body" data-fade data-delay="2.05">Ranked on carbon × cost × effort, weighted by factor confidence, tracked to an owner.</p></div>
+  </div>
+</section>
+
+<!-- S5 rule -->
+<section class="scene" id="sc5">
+  <p class="kicker" data-fade>The one architectural rule</p>
+  <h2 data-fade data-delay="0.3">The language model never produces a carbon number.</h2>
+  <div class="hair mr" data-fade data-delay="0.7" style="width:100%"></div>
+  <div class="two mt2">
+    <div class="col">
+      <p class="lbl" data-fade data-delay="0.9">The engine computes</p>
+      <p class="body" data-fade data-delay="1.1">Every kilogram of CO₂ comes from a deterministic, unit-tested calculation
+        engine. The model chooses which analyses to run — and explains the result.</p>
+      <p class="body" style="margin-top:26px" data-fade data-delay="1.3">Failure mode: “I could not find that.” Never “here is a plausible number.”</p>
+    </div>
+    <div class="col">
+      <p class="lbl" data-fade data-delay="1.35">Because it is auditable</p>
+      <p class="body" data-fade data-delay="1.55">Every recommendation shows its arithmetic: the quantity, the factor,
+        the factor’s source and year, and the uncertainty.</p>
+    </div>
+  </div>
+</section>
+
+<!-- S6 result -->
+<section class="scene" id="sc6">
+  <p class="kicker" data-fade>Ask it, get a plan</p>
+  <h2 data-fade data-delay="0.3">“Cut our footprint 15% without raising operating cost.”</h2>
+  <div style="display:flex;gap:130px;margin-top:64px">
+    <div class="figl" data-fade data-delay="0.85"><dt>Carbon reduction</dt><dd id="cRed" class="save" data-count="33.8">0<small>%</small></dd></div>
+    <div class="figl" data-fade data-delay="1.05"><dt>Carbon saved</dt><dd id="cSave" class="save" data-count="3790">0<small>tCO₂e / yr</small></dd></div>
+    <div class="figl" data-fade data-delay="1.25"><dt>Cost impact</dt><dd id="cCost" class="save" data-count="775">0<small>K / yr saved</small></dd></div>
+  </div>
+  <p class="say" data-fade data-delay="1.6">342 feasible, of 2,098 scenarios evaluated. Every one satisfies both constraints — by construction.</p>
+</section>
+
+<!-- S7 close -->
+<section class="scene" id="sc7">
+  <p class="kicker" data-fade>The ask</p>
+  <h1 data-fade data-delay="0.3" style="font-size:88px">From carbon accounting<br/>to carbon action.</h1>
+  <p class="close-say" data-fade data-delay="0.8">Built for grids that make decarbonisation hard. Bilingual, benchmarked across 20 JAPAC grids,
+    and every number traceable to the engine that computed it.</p>
+  <div class="hair mr" data-fade data-delay="1.1" style="width:100%"></div>
+  <p class="url" data-fade data-delay="1.3">This is CarbonPilot · rakazo-civo.tail1b51ed.ts.net:8443</p>
+</section>
+
+<script>
+  // Deterministic timeline: scene start times (seconds) matched to narration.
+  const SCENES = [
+    { id:"sc1", start:0.0,    dur:5.37 },
+    { id:"sc2", start:5.37,   dur:14.82 },
+    { id:"sc3", start:20.19,  dur:18.86 },
+    { id:"sc4", start:39.05,  dur:7.72 },
+    { id:"sc5", start:46.77,  dur:15.23 },
+    { id:"sc6", start:62.0,   dur:13.38 },
+    { id:"sc7", start:75.38,  dur:8.62 },
+  ];
+  const T_END = SCENES[SCENES.length-1].start + SCENES[SCENES.length-1].dur;
+
+  const fadeEls = [];
+  document.querySelectorAll("[data-fade]").forEach(el => {
+    fadeEls.push({ el, delay: parseFloat(el.getAttribute("data-delay") || "0") });
+  });
+  const anim = t => t < 0 ? 0 : t > 0.45 ? 1 : t / 0.45;
+
+  function fmt(n){ return Math.round(n).toLocaleString("en-US"); }
+
+  function render(t){
+    let active = null;
+    SCENES.forEach(s => {
+      const el = document.getElementById(s.id);
+      const local = t - s.start;
+      const on = local >= -0.05 && local < s.dur + 0.05;
+      el.classList.toggle("active", on);
+      if (on) active = s;
+    });
+    if (active){
+      const lt = t - active.start;
+      fadeEls.forEach(f => {
+        f.el.style.opacity = anim(lt - f.delay);
+        f.el.style.transform = `translateY(${(1-anim(lt-f.delay))*16}px)`;
+      });
+    }
+    // count-ups
+    const cu = lt => lt < 0 ? 0 : lt > 1.6 ? 1 : lt/1.6;
+    const setCount = (id, target, dec) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      let k = 0;
+      if (active) {
+        const v = cu(t - active.start - 0.85);
+        k = v;
+      }
+      if (dec) el.firstChild.textContent = (target*k).toFixed(1);
+      else el.firstChild.textContent = fmt(target*k);
+      el.style.opacity = active ? 1 : 0;
+    };
+    if (active){
+      setCount("cKWH", 11208, false);
+      setCount("cSc3", 61.1, true);
+      setCount("cRed", 33.8, true);
+      setCount("cSave", 3790, false);
+      setCount("cCost", 775, false);
+      // bars
+      document.querySelectorAll("[data-bar]").forEach(b => {
+        const lt = t - active.start;
+        b.style.width = (parseFloat(b.getAttribute("data-bar")) * anim(lt - 1.1) * 100).toFixed(1) + "%";
+      });
+    } else {
+      ["cKWH","cSc3","cRed","cSave","cCost"].forEach(id => { const el = document.getElementById(id); if (el) el.style.opacity = 0; });
+    }
+    document.getElementById("prog").style.width = (t/T_END*100).toFixed(2) + "%";
+  }
+
+  window.__setTime = render;
+  render(0);
+</script>
+</body>
+</html>

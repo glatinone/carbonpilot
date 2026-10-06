@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>CarbonPilot — demo walkthrough</title>
+<style>
+  :root {
+    --paper:#fbfaf7; --band:#f6f5f1;
+    --ink:#14150f; --soft:#33332e; --muted:#6d6d63; --faint:#9a9a8e;
+    --rule:#e2e0d8; --strong:#c9c6ba;
+    --save:#1c4b36;
+    --serif:"Source Serif 4", Georgia, serif;
+    --sans:"Inter","Segoe UI",sans-serif;
+    --mono:"IBM Plex Mono",Consolas,monospace;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { width:100%; height:100%; overflow:hidden; background:var(--paper); }
+  body { position:relative; color:var(--ink); font-family:var(--sans); }
+  .scene { position:absolute; inset:0; opacity:0; overflow:hidden; }
+  .scene.active { opacity:1; }
+  .scene img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .cap {
+    position:absolute; left:84px; bottom:64px; max-width:1200px;
+    padding:26px 34px 20px; background:var(--paper);
+    border-top:2px solid var(--ink);
+  }
+  .cap .k { font-family:var(--mono); font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); }
+  .cap h3 { font-family:var(--serif); font-size:37px; font-weight:700; line-height:1.12; margin-top:8px; max-width:1000px; }
+  .chrome { position:absolute; left:84px; right:84px; top:44px; display:flex; justify-content:space-between;
+    font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); }
+  .prog { position:absolute; left:0; right:0; bottom:0; height:4px; background:var(--rule); }
+  .prog i { display:block; height:100%; background:var(--ink); width:0; }
+  .close { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center;
+    padding:0 150px; background:var(--paper); }
+  .close h1 { font-family:var(--serif); font-size:96px; font-weight:700; line-height:1.02; letter-spacing:-.02em; }
+  .close .url { font-family:var(--mono); font-size:20px; color:var(--muted); margin-top:44px; }
+  .close .lead { font-family:var(--serif); font-size:30px; line-height:1.5; color:var(--soft); margin-top:30px; max-width:1100px; }
+</style>
+</head>
+<body>
+
+<div class="chrome"><span>CarbonPilot</span><span>Product walkthrough · live instance</span></div>
+<div class="prog"><i id="prog"></i></div>
+
+<section class="scene" id="sc1"><img src="../assets/captures/01-dashboard.png"/>
+  <div class="cap"><p class="k">01 · Measure</p><h3>The dashboard states it plainly: 11,208 tCO₂e a year.</h3></div>
+</section>
+<section class="scene" id="sc2"><img src="../assets/captures/01-dashboard.png"/>
+  <div class="cap"><p class="k">01 · Measure</p><h3>61% is Scope 3. Cloud is 2.4% of the carbon — but a third of the spend.</h3></div>
+</section>
+<section class="scene" id="sc3"><img src="../assets/captures/02-upload.png"/>
+  <div class="cap"><p class="k">02 · Ingest</p><h3>Map first, calculate second. The interpretation is confirmed before anything is written.</h3></div>
+</section>
+<section class="scene" id="sc4"><img src="../assets/captures/03-insights.png"/>
+  <div class="cap"><p class="k">03 · Diagnose</p><h3>What moved, and why — with the arithmetic on every row.</h3></div>
+</section>
+<section class="scene" id="sc5"><img src="../assets/captures/04-simulator-before.png"/>
+  <div class="cap"><p class="k">04 · Simulate</p><h3>One sentence in: reduce the footprint 15% without raising cost.</h3></div>
+</section>
+<section class="scene" id="sc6"><img src="../assets/captures/05-simulator-result.png"/>
+  <div class="cap"><p class="k">04 · Simulate</p><h3>342 of 2,098 scenarios satisfy both constraints. The engine shows its trade-offs.</h3></div>
+</section>
+<section class="scene" id="sc7"><img src="../assets/captures/06-actions.png"/>
+  <div class="cap"><p class="k">05 · Act</p><h3>A ranked register: carbon × cost × effort, tracked to an owner.</h3></div>
+</section>
+<section class="scene" id="sc8"><img src="../assets/captures/07-japac.png"/>
+  <div class="cap"><p class="k">06 · Compare</p><h3>The same load, priced on twenty regional grids — location becomes a decision.</h3></div>
+</section>
+<section class="scene close" id="sc9">
+  <p class="k" style="font-family:var(--mono);font-size:14px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)">Google Cloud AI Builder Cup 2026</p>
+  <h1>From carbon accounting<br/>to carbon action.</h1>
+  <p class="lead">A working prototype — live now, bilingual, and every number traceable to the engine that computed it.</p>
+  <p class="url">rakazo-civo.tail1b51ed.ts.net:8443</p>
+</section>
+
+<script>
+  const SCENES = [
+    { id:"sc1", start:0.0,    dur:12.33 },
+    { id:"sc2", start:12.33,  dur:19.70 },
+    { id:"sc3", start:32.02,  dur:14.35 },
+    { id:"sc4", start:46.37,  dur:14.13 },
+    { id:"sc5", start:60.50,  dur:6.0 },
+    { id:"sc6", start:66.50,  dur:17.68 },
+    { id:"sc7", start:84.18,  dur:13.67 },
+    { id:"sc8", start:97.85,  dur:14.34 },
+    { id:"sc9", start:112.19, dur:12.3 },
+  ];
+  const T_END = 124.5;
+  const anim = t => t < 0 ? 0 : t > 0.5 ? 1 : t / 0.5;
+
+  function render(t){
+    let active = null;
+    SCENES.forEach(s => {
+      const el = document.getElementById(s.id);
+      const local = t - s.start;
+      const on = local >= 0 && local < s.dur;
+      el.classList.toggle("active", on);
+      if (on) active = { ...s, local };
+    });
+    if (active){
+      const img = document.querySelector(`#${active.id} img`);
+      if (img){
+        const k = anim((active.local - 0.3) / (active.dur - 0.6)) * 0.05 + 1.0; // slow push-in 1.0 -> 1.05
+        img.style.transform = `scale(${k.toFixed(4)})`;
+      }
+      const cap = document.querySelector(`#${active.id} .cap`);
+      if (cap){ cap.style.opacity = anim(active.local - 0.25); cap.style.transform = `translateY(${(1-anim(active.local-0.25))*14}px)`; }
+    }
+    document.getElementById("prog").style.width = (t / T_END * 100).toFixed(2) + "%";
+  }
+  window.__setTime = render;
+  render(0);
+</script>
+</body>
+</html>

@@ -165,3 +165,13 @@ check. Fix anything it reports, then work through the rest by hand:
 | "Can it read our real data?" | Yes — CSV upload, long or wide format, with a semantic mapping preview before anything is calculated. Every import is scored by scope: in the demo file, purchased electricity lands in Scope 2 and natural gas in Scope 1. |
 | "So what did the constraint search actually return?" | Ask for −15% carbon and no cost increase and it returns **−33.8% carbon, −$775K/year** from four actions, out of 342 feasible combinations of the 2,098 evaluated. The engine beats the constraint because the cheapest large reductions are cheaper than the baseline, not because it was told to. |
 | "Why is one action ranked above another?" | Every recommendation carries a one-line comparison against the action ranked immediately below it — how much more or less carbon, how much cheaper or costlier, and whether it is easier to ship. It is computed, not narrated. |
+
+---
+
+## Recorded demo (2026-10-06)
+
+`submission/demo.mp4` (2:05, 1920×1080) is a recorded walkthrough of the *live deployed
+instance* — every screen is a real capture, including the constraint search (15% min
+reduction, $0 max cost increase) returning "342 of 2,098 scenarios satisfy both
+constraints". `submission/explainer.mp4` (84 s) is the shorter story-only cut. Both are
+narrated (TTS) and loudness-normalised; the narration script mirrors the sections above.

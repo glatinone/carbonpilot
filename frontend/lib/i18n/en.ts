@@ -318,6 +318,51 @@ const en: Record<string, string> = {
   "mx.quickWins": "Quick wins",
   "mx.reconsider": "Reconsider",
 
+  // --- marginal abatement cost curve --------------------------------------
+  "mac.band": "Marginal abatement cost",
+  "mac.title": "Cost per tonne against cumulative tonnes saved",
+  "mac.total": "{total} across {n} actions, cheapest tonne first",
+  "mac.empty": "No actions to price per tonne yet",
+  "mac.aria":
+    "Marginal abatement cost curve: every recommended action as one dot, placed by the cumulative tonnes it helps save and its net cost per tonne, coloured by implementation effort",
+  "mac.axisCost": "Net cost per tonne ($/tCO₂e)",
+  "mac.axisCarbon": "Cumulative tonnes saved →",
+  "mac.saves": "Saves money",
+  "mac.costs": "Costs money",
+  "mac.scaleNote":
+    "The vertical axis is symmetric-logarithmic — linear close to zero, logarithmic beyond it; the horizontal axis is linear cumulative tonnes, with each dot centred in the tonnes it adds.",
+
+  // --- carbon pricing scenario ---------------------------------------------
+  "pricing.band": "Carbon pricing",
+  "pricing.title": "What if a tonne cost {price}?",
+  "pricing.lead":
+    "One human number revalues the whole catalog: baseline tonnes × price, and every action's net position is its own cost impact plus the carbon value of the tonnes it saves. All engine arithmetic — no language model.",
+  "pricing.priceLabel": "Carbon price (USD / tCO₂e)",
+  "pricing.apply": "Apply price",
+  "pricing.applying": "Revaluing…",
+  "pricing.presets": "Presets",
+  "pricing.annualCost": "At {price}/tCO₂e this footprint carries {amount} a year",
+  "pricing.bRanked": "Re-ranked actions",
+  "pricing.thRank": "#",
+  "pricing.thAction": "Action",
+  "pricing.thT": "tCO₂e",
+  "pricing.thCarbonValue": "Carbon value",
+  "pricing.thNet": "Net /yr",
+  "pricing.thDelta": "vs cost-only rank",
+  "pricing.up": "▲ {n}",
+  "pricing.down": "▼ {n}",
+  "pricing.same": "—",
+  "pricing.empty": "No actions to revalue yet — run the engine first.",
+  "pricing.verdictTitle": "Machine verdict",
+  "pricing.financialOnly":
+    "At $0/tCO₂e this is the pure financial ranking — carbon has no price, so cost decides alone.",
+  "pricing.paysForItself":
+    "At {price}$/tCO₂e, {leader_title} now pays for itself: its tonnes are worth {leader_carbon_value_usd}/yr and it nets {leader_net_usd}/yr. Carbon is no longer free.",
+  "pricing.stillCosts":
+    "At {price}$/tCO₂e even the best action ({leader_title}) still costs {leader_net_usd}/yr more than the carbon it saves — this price is not high enough to invert the ranking.",
+  "pricing.method":
+    "Deterministic: baseline tonnes × price, each action's net position is its proven cost impact plus the carbon value (tonnes × price) of the tonnes it saves. The verdict sentence is assembled by the engine from structured fields, never written by a model.",
+
   // --- trend chart --------------------------------------------------------
   "chart.recorded": "Recorded",
   "chart.projected": "Projected",

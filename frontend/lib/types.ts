@@ -143,6 +143,39 @@ export type ConstraintSearch = {
   message: string;
 };
 
+/**
+ * Carbon pricing scenario — one human number (USD per tonne) revalues the whole
+ * catalog. Every figure here is engine arithmetic: baseline tonnes × price, and
+ * each action's net position is its own cost impact plus the carbon value of the
+ * tonnes it saves. `rank_financial` is the price-0 ordering; `rank_priced` is
+ * the ordering at the given price — the delta between them is the story.
+ */
+export type PricedAction = {
+  id: number;
+  title: string;
+  activity_type: string;
+  carbon_impact_t: number;
+  cost_impact_usd: number;
+  effort: string;
+  confidence_pct: number;
+  carbon_value_usd: number;
+  net_usd: number;
+  rank_financial: number;
+  rank_priced: number;
+};
+
+export type PricingScenario = {
+  company_id: number;
+  price_usd_per_t: number;
+  baseline_total_tco2e: number;
+  annual_carbon_cost_usd: number;
+  action_count: number;
+  actions: PricedAction[];
+  verdict_key: "pricing.empty" | "pricing.financialOnly" | "pricing.paysForItself" | "pricing.stillCosts";
+  verdict_vars: Record<string, number | string | null>;
+  company: { id: number; name: string; region: string };
+};
+
 export type ToolCallTrace = { tool: string; args: Record<string, unknown>; summary: string };
 
 export type ChatResponse = {

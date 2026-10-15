@@ -5,6 +5,8 @@ import { api } from "@/lib/api";
 import type { ActionItem, Recommendation } from "@/lib/types";
 import { RecommendationCard } from "@/components/RecommendationCard";
 import { DecisionMatrix } from "@/components/DecisionMatrix";
+import { MacCurve } from "@/components/MacCurve";
+import { PricingPanel } from "@/components/PricingPanel";
 import { EmptyState, ErrorBanner, Footnote, SectionHead, Skeleton } from "@/components/ui";
 import { useLocale } from "@/lib/i18n";
 import { formatTonnes, formatUsd } from "@/lib/format";
@@ -63,6 +65,9 @@ export default function ActionsPage() {
   }
 
   const visible = showAll ? recommendations : recommendations.slice(0, 8);
+  // What the MAC curve can actually price: an action with no tonnage has no
+  // cost per tonne. The register itself stays complete either way.
+  const priced = recommendations.filter((rec) => rec.carbon_impact_t > 0);
 
   return (
     <div>
@@ -84,6 +89,29 @@ export default function ActionsPage() {
               <DecisionMatrix recommendations={recommendations} />
             )}
           </section>
+
+          {/* Marginal abatement cost — what each tonne costs, cheapest first */}
+          <section className="mt-8 border-t border-rule pt-4">
+            <SectionHead
+              kicker={t("mac.band")}
+              title={t("mac.title")}
+              note={
+                priced.length > 0
+                  ? t("mac.total", {
+                      total: formatTonnes(priced.reduce((sum, rec) => sum + rec.carbon_impact_t, 0)),
+                      n: priced.length,
+                    })
+                  : undefined
+              }
+            />
+            {priced.length === 0 ? (
+              <p className="py-6 text-[12px] text-ink-muted">{t("mac.empty")}</p>
+            ) : (
+              <MacCurve recommendations={recommendations} />
+            )}
+          </section>
+
+          <PricingPanel />
 
           {/* Ranked actions */}
           <section className="mt-8 border-t border-rule pt-4">

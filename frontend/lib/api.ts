@@ -7,6 +7,7 @@ import type {
   Intervention,
   JapacBenchmark,
   MappingPreview,
+  PricingScenario,
   Recommendation,
   ScenarioResult,
 } from "./types";
@@ -109,6 +110,12 @@ export const api = {
     request<ConstraintSearch>(`/api/scenarios/constraints?company_id=${companyId}`, {
       method: "POST",
       body: JSON.stringify(payload),
+    }),
+
+  pricingScenario: (priceUsdPerT: number, companyId = 1) =>
+    request<PricingScenario>(`/api/pricing/scenario`, {
+      method: "POST",
+      body: JSON.stringify({ company_id: companyId, price_usd_per_t: priceUsdPerT }),
     }),
 
   recommendations: (companyId = 1) =>

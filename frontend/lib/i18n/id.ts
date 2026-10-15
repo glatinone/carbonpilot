@@ -324,6 +324,51 @@ const id: Record<string, string> = {
   "mx.quickWins": "Menang cepat",
   "mx.reconsider": "Pertimbangkan ulang",
 
+  // --- kurva biaya pengurangan marginal (MAC) -----------------------------
+  "mac.band": "Biaya pengurangan marginal",
+  "mac.title": "Biaya per ton terhadap ton terakumulasi yang dihemat",
+  "mac.total": "{total} dari {n} aksi, ton termurah lebih dulu",
+  "mac.empty": "Belum ada aksi untuk dihitung biaya per tonnya",
+  "mac.aria":
+    "Kurva biaya pengurangan marginal: setiap aksi rekomendasi sebagai satu titik, ditempatkan menurut akumulasi ton yang dihemat dan biaya bersih per tonnya, diwarnai menurut tingkat usaha",
+  "mac.axisCost": "Biaya bersih per ton ($/tCO₂e)",
+  "mac.axisCarbon": "Ton terakumulasi yang dihemat →",
+  "mac.saves": "Menghemat uang",
+  "mac.costs": "Mengeluarkan uang",
+  "mac.scaleNote":
+    "Sumbu vertikal berskala logaritmik simetris — linier di dekat nol, logaritmik di luarnya; sumbu mendatar linier (akumulasi ton), dengan tiap titik berada di tengah ton yang ditambahkannya.",
+
+  // --- skenario harga karbon -------------------------------------------------
+  "pricing.band": "Harga karbon",
+  "pricing.title": "Bagaimana jika satu ton bernilai {price}?",
+  "pricing.lead":
+    "Satu angka dari manusia menghitung ulang seluruh katalog: tonase baseline × harga, dan posisi bersih tiap aksi adalah dampak biayanya sendiri ditambah nilai karbon dari ton yang dihematnya. Semuanya aritmetika mesin — tidak ada model bahasa.",
+  "pricing.priceLabel": "Harga karbon (USD / tCO₂e)",
+  "pricing.apply": "Terapkan harga",
+  "pricing.applying": "Menghitung ulang…",
+  "pricing.presets": "Preset",
+  "pricing.annualCost": "Pada {price}/tCO₂e, jejak ini bermuatan {amount} per tahun",
+  "pricing.bRanked": "Aksi yang diurutkan ulang",
+  "pricing.thRank": "#",
+  "pricing.thAction": "Aksi",
+  "pricing.thT": "tCO₂e",
+  "pricing.thCarbonValue": "Nilai karbon",
+  "pricing.thNet": "Bersih /tahun",
+  "pricing.thDelta": "vs peringkat biaya saja",
+  "pricing.up": "▲ {n}",
+  "pricing.down": "▼ {n}",
+  "pricing.same": "—",
+  "pricing.empty": "Belum ada aksi untuk dihitung ulang — jalankan mesin dulu.",
+  "pricing.verdictTitle": "Putusan mesin",
+  "pricing.financialOnly":
+    "Pada $0/tCO₂e ini peringkat finansial murni — karbon belum punya harga, jadi biaya yang memutuskan sendirian.",
+  "pricing.paysForItself":
+    "Pada {price}/tCO₂e, {leader_title} kini membayar lunas dirinya sendiri: ton-nya bernilai {leader_carbon_value_usd}/tahun dan posisi bersihnya {leader_net_usd}/tahun. Karbon tidak lagi gratis.",
+  "pricing.stillCosts":
+    "Pada {price}/tCO₂e bahkan aksi terbaik ({leader_title}) masih berbiaya {leader_net_usd}/tahun lebih besar daripada karbon yang dihematnya — harga ini belum cukup tinggi untuk membalik peringkat.",
+  "pricing.method":
+    "Deterministik: tonase baseline × harga, posisi bersih tiap aksi adalah dampak biaya yang terbukti ditambah nilai karbon (ton × harga) dari ton yang dihematnya. Kalimat putusan dirakit mesin dari kolom terstruktur, tidak pernah ditulis model.",
+
   // --- trend chart --------------------------------------------------------
   "chart.recorded": "Tercatat",
   "chart.projected": "Perkiraan",

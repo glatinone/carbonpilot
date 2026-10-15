@@ -1,12 +1,62 @@
 # STATUS.md — CarbonPilot project state
 
-**Last updated:** 2026-10-06
+**Last updated:** 2026-10-15
 **Competition:** JAPAC AI hackathon (Google AI builder)
-**Repo:** private, `glatinone/carbonpilot`
+**Repo:** public, `glatinone/carbonpilot`
 **Live:** `https://rakazo-civo.tail1b51ed.ts.net:8443`
 
 This is the working status board. `README.md` is the pitch, `DEPLOY.md` is the
 topology, `DESIGN.md` is the design system. This file is what is true *now*.
+
+---
+
+## 2026-10-15 — YOLO round: what was done
+
+One parallel batch + parent work. Final state **verified live** at the URL above:
+113 backend tests, `tsc` exit 0, production build 7 routes, deployed, smoke-tested
+on the public funnel.
+
+| Item | What landed | Proof |
+|---|---|---|
+| Persistent service | systemd unit `enabled` + `Restart=always` + auto-start | unit template, `systemctl is-enabled`, live health |
+| Public repo | `glatinone/carbonpilot` visibility public | github page |
+| Bilingual constraint message | constraint-search result now per-locale (`message_key` + counts, additive) | pytest, live `sim.searchFeasible` |
+| Per-page tab titles | 6 unique titles, static export | build, DOM check |
+| `scripts/deploy.sh` | idempotent, double health check, rsync-fallback to scp | deploy run |
+| **MAC curve** | 16-action marginal abatement cost curve — dot per action, X = cumulative t, Y = net $/t (symlog), effort = colour, full 16-chip legend, bilingual | pytest 105 → integrated; live render EN+ID |
+| **Carbon pricing scenario** | one human number ($/t) → engine revalues footprint + re-ranks all 16 actions by net position, machine verdict sentence | 8 new tests; live: $100/t ⇒ $1,120,792/yr, order changed (nonzero deltas), monotone |
+
+### MAC curve — design decisions
+
+- **Dots, not bars.** Bars would smear a 1.9 t action against a 2,452 t one
+  (~0.3 px); each item is a dot at the centre of the tonnes it adds, so all 16 read.
+- **Y = symlog**, linear ±$300 and logarithmic beyond; **X = linear** cumulative
+  tonnes (log would break the "must sum" property).
+- Money is position against the zero line; effort is the only colour, reusing the
+  matrix palette. Rank number inside the dot = card number; the 16-chip legend below
+  makes every action readable without hover. `mac.*` keys added (12 per language).
+
+### Carbon pricing — design decisions
+
+- **Deterministic by construction**: baseline tonnes × price; each action's net
+  position = its proven cost impact + tonnes × price. No LLM arithmetic anywhere.
+- **Verdict is keyed** (`pricing.paysForItself` / `stillCosts` / `financialOnly` /
+  `empty`), assembled from structured fields, so each language phrases it itself.
+- UI: price input + presets ($0–$150) on the Actions page between the MAC curve and
+  the ranked list; re-ranked table shows #, t, carbon value, net/yr, delta vs the
+  cost-only rank.
+- **Verified live** at both $50/t (annual carbon cost $560,396 on 11,208 t) and
+  $100/t (order actually changed — nonzero deltas, net monotone, verdict valid).
+  Endpoint: `POST /api/pricing/scenario`.
+- File map (all new): `backend/app/engine/pricing.py` (engine),
+  `backend/app/routers/pricing.py` (POST endpoint), `backend/app/tests/test_pricing.py`
+  (8 tests), `frontend` `PricingPanel` + i18n (`pricing.*`, 23 keys/language; parity 339=339).
+
+### Pitch-deck + video brief
+
+`docs/brief-pitch-deck-video.md` is the new brief for building the pitch deck and
+presentation video with Claude Opus 5.5 — anchor numbers, story arc, MAC + pricing
+demo beats, language recommendation. See that file.
 
 ---
 
@@ -139,12 +189,12 @@ Narration is TTS (Edge voices). To swap in a human take: re-record the same scri
 - Publish the repository when submitting (`gh repo edit glatinone/carbonpilot --visibility public`).
 
 **Known gaps, no blocker**
-- No repeatable deploy script. Deployment is currently a manual copy of changed files
-  plus `systemctl restart`; every future fix repeats it. A small `scripts/deploy.sh`
-  reading host/key from the environment would remove that step.
+- English-only backend text is down to recommendation *descriptions* and the agent's
+  own answers. The constraint-search result is now bilingual (2026-10-15); the MAC
+  curve and pricing labels are bilingual by construction. Titles/descriptions and
+  chat stay English from the backend.
 - `llm_model_resolved` is `null` until the first chat call resolves the model. Correct
   but momentarily unhelpful in health output.
-- Per-page tab titles are not set — every screen shows the same title.
 
 **Deliberately not done**
 - No new dependency for i18n. The app is a static export, so a client provider is the

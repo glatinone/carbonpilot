@@ -153,6 +153,9 @@ def baseline(db: Session, company_id: int, year: int | None = None) -> dict:
             "total_tco2e": 0.0,
             "total_cost_usd": 0.0,
             "activity_count": 0,
+            "avg_monthly_tco2e": 0.0,
+            "month_count": 0,
+            "intensity_tco2e_per_musd": None,
             "scope_split": {},
             "period": None,
             "incomplete": True,
@@ -167,12 +170,18 @@ def baseline(db: Session, company_id: int, year: int | None = None) -> dict:
         scope_split[f"scope_{calc.scope}"] += calc.co2e_kg
 
     month_count = len(months)
+    intensity = (
+        round((total_kg / KG_PER_TONNE) / (total_cost / 1_000_000), 2)
+        if total_cost > 0
+        else None
+    )
     return {
         "total_tco2e": round(total_kg / KG_PER_TONNE, 2),
         "total_cost_usd": round(total_cost, 2),
         "activity_count": len(rows),
         "avg_monthly_tco2e": round(total_kg / KG_PER_TONNE / max(month_count, 1), 2),
         "month_count": month_count,
+        "intensity_tco2e_per_musd": intensity,
         "scope_split": {
             k: {"tco2e": round(v / KG_PER_TONNE, 2), "pct": round(100 * v / total_kg, 1)}
             for k, v in sorted(scope_split.items())

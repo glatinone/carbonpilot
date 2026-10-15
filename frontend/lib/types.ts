@@ -2,8 +2,9 @@ export type Baseline = {
   total_tco2e: number;
   total_cost_usd: number;
   avg_monthly_tco2e?: number;
-  activity_count: number;
   month_count?: number;
+  intensity_tco2e_per_musd?: number | null;
+  activity_count: number;
   scope_split: Record<string, { tco2e: number; pct: number }>;
   period?: { start: string; end: string };
   incomplete: boolean;
@@ -259,4 +260,52 @@ export type JapacBenchmark = {
   };
   measured: { electricity_kwh: number; tco2e: number };
   countries: JapacGridRow[];
+};
+
+/** A linear path from today's footprint to a % reduction by a target year. */
+export type TrajectoryYear = {
+  year: number;
+  projected_tco2e: number;
+  carbon_cost_usd: number;
+};
+
+export type Trajectory = {
+  company_id: number;
+  baseline_total_tco2e: number;
+  target_total_tco2e: number;
+  target_reduction_pct: number;
+  target_year: number;
+  price_usd_per_t: number;
+  years: TrajectoryYear[];
+  note: string | null;
+  company: { id: number; name: string; region: string };
+};
+
+/** Fixed-segment split of the single procurement spend line (demo attribution). */
+export type SupplierSegment = {
+  name: string;
+  share_pct: number;
+  spend_usd: number;
+  embedded_tco2e: number;
+};
+
+export type SupplierBreakdown = {
+  procurement_spend_usd: number;
+  procurement_tco2e: number;
+  segments: SupplierSegment[];
+  attribution_note: string;
+  incomplete: boolean;
+  company: { id: number; name: string; region: string };
+};
+
+/** The approved action plan measured against recorded monthly emissions. */
+export type CourseCheck = {
+  plan_total_tco2e: number;
+  months_since_plan: number;
+  required_monthly_tco2e: number;
+  actual_monthly_tco2e: number;
+  baseline_monthly_tco2e: number;
+  verdict_key: "course.noPlan" | "course.onTrack" | "course.behind";
+  verdict_vars: Record<string, number>;
+  company: { id: number; name: string; region: string };
 };

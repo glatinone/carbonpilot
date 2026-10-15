@@ -20,7 +20,18 @@ from app import __version__
 from app.agent import gemini_agent
 from app.config import get_settings
 from app.db import SessionLocal, init_db
-from app.routers import actions, agent, dashboard, ingest, japac, pricing, scenarios
+from app.routers import (
+    actions,
+    agent,
+    course,
+    dashboard,
+    ingest,
+    japac,
+    pricing,
+    scenarios,
+    suppliers,
+    trajectory,
+)
 
 logger = logging.getLogger("carbonpilot")
 
@@ -78,6 +89,9 @@ app.include_router(scenarios.router)
 app.include_router(actions.router)
 app.include_router(agent.router)
 app.include_router(pricing.router)
+app.include_router(trajectory.router)
+app.include_router(suppliers.router)
+app.include_router(course.router)
 # The benchmark router declares a bare "/japac" path, so the /api prefix belongs
 # here — next to every other mount point — rather than inside the router.
 app.include_router(japac.router, prefix="/api")

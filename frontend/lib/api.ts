@@ -2,6 +2,7 @@ import type {
   ActionItem,
   ChatResponse,
   ConstraintSearch,
+  CourseCheck,
   Dashboard,
   IngestResult,
   Intervention,
@@ -10,6 +11,8 @@ import type {
   PricingScenario,
   Recommendation,
   ScenarioResult,
+  SupplierBreakdown,
+  Trajectory,
 } from "./types";
 
 // Empty string means "same origin as the page" — used by the static-export
@@ -117,6 +120,21 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ company_id: companyId, price_usd_per_t: priceUsdPerT }),
     }),
+
+  trajectory: (
+    payload: { target_reduction_pct: number; target_year: number; price_usd_per_t?: number },
+    companyId = 1,
+  ) =>
+    request<Trajectory>(`/api/trajectory`, {
+      method: "POST",
+      body: JSON.stringify({ company_id: companyId, ...payload }),
+    }),
+
+  suppliers: (companyId = 1) =>
+    request<SupplierBreakdown>(`/api/suppliers?company_id=${companyId}`),
+
+  course: (companyId = 1) =>
+    request<CourseCheck>(`/api/course?company_id=${companyId}`),
 
   recommendations: (companyId = 1) =>
     request<{ count: number; recommendations: Recommendation[] }>(

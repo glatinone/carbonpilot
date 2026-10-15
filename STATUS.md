@@ -10,6 +10,28 @@ topology, `DESIGN.md` is the design system. This file is what is true *now*.
 
 ---
 
+## 2026-10-15 — Level 1-4 (quick features)
+
+One agent attempt died (provider balance) before writing anything, so the parent
+implemented all four directly. Final state: 135 tests, tsc exit 0, build 7 routes,
+deployed, every endpoint smoke-tested on the public funnel.
+
+| Feature | What landed | Proof |
+|---|---|---|
+| Emissions intensity | `intensity_tco2e_per_musd` in baseline = footprint ÷ spend/$1M, null when no spend; shown next to the annual figure on the dashboard | live: 315.32 t/$1M (11,208 t ÷ $35.5M) |
+| Target trajectory | linear glide from today's footprint to a stated % - target year, every year priced at a carbon price; `POST /api/trajectory` | 4 tests; live: midpoint exact (8,854 t = half of 11,208→6,500) |
+| Supplier lens | deterministic split of the single procurement line across 5 fixed segments; `GET /api/suppliers` | 4 tests; live: 5 segments, sums reconstruct the total |
+| Course check | approved plan's monthly requirement vs recorded reality; `GET /api/course` | 4 tests; live: noPlan until an action is approved — correct |
+
+New i18n keys: `dash.intensity`, `tray.*`, `sup.*`, `course.*` — parity 374=374.
+Files: `backend/app/engine/{trajectory,suppliers,course,intensity}.py`,
+`backend/app/routers/{trajectory,suppliers,course}.py`,
+`backend/app/tests/test_{trajectory,suppliers,course,intensity}.py`,
+`frontend/components/{TrajectoryPanel,SupplierTable,CourseCheck}.tsx`,
+edited `frontend/app/page.tsx` and `frontend/app/actions/page.tsx`.
+
+---
+
 ## 2026-10-15 — YOLO round: what was done
 
 One parallel batch + parent work. Final state **verified live** at the URL above:

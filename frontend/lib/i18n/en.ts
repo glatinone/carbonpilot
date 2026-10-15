@@ -73,6 +73,8 @@ const en: Record<string, string> = {
   "dash.gridRegion": "Grid region · {region}",
   "dash.footprint": "Estimated footprint, annualised",
   "dash.perYear": "tCO₂e / year",
+  "dash.intensity": "tCO₂e per $1M of tracked spend",
+  "dash.intensityNote": "footprint divided by tracked operating cost",
   "dash.vsPrev": "{pct} vs previous month",
   "dash.largestLine": "{stream} is the largest line at {pct}% of the footprint",
   "dash.largestLine2": ", and {stream} moved {pct} in {month}.",
@@ -362,6 +364,50 @@ const en: Record<string, string> = {
     "At {price}$/tCO₂e even the best action ({leader_title}) still costs {leader_net_usd}/yr more than the carbon it saves — this price is not high enough to invert the ranking.",
   "pricing.method":
     "Deterministic: baseline tonnes × price, each action's net position is its proven cost impact plus the carbon value (tonnes × price) of the tonnes it saves. The verdict sentence is assembled by the engine from structured fields, never written by a model.",
+
+  // --- target trajectory ------------------------------------------------
+  "tray.band": "Commitment path",
+  "tray.title": "The cost of a stated target",
+  "tray.lead":
+    "State a reduction target and a year; the engine draws the linear glide from today's footprint to the target and prices every year at a carbon price. Deterministic: target applied linearly over the years, cost = tonnes × price.",
+  "tray.inputPct": "Reduction target (%)",
+  "tray.inputYear": "Target year",
+  "tray.price": "Carbon price ($/tCO₂e)",
+  "tray.run": "Project path",
+  "tray.running": "Projecting…",
+  "tray.thYear": "Year",
+  "tray.thProjected": "Projected tCO₂e",
+  "tray.thCost": "Carbon cost at price",
+  "tray.method":
+    "Linear glide from baseline to target over the years between now and the target year; cost per year = projected tonnes × the price above.",
+  "tray.incomplete": "No baseline to project a trajectory from — load activity data first.",
+
+  // --- supplier attribution ---------------------------------------------
+  "sup.band": "Supplier lens",
+  "sup.title": "Where procurement carbon sits",
+  "sup.note": "procurement spend split across fixed segments",
+  "sup.thSegment": "Segment",
+  "sup.thShare": "Share",
+  "sup.thSpend": "Spend (USD)",
+  "sup.thTco2e": "Embedded tCO₂e",
+  "sup.footnote": "{note}",
+  "sup.empty": "No procurement line in the data.",
+
+  // --- course-correct ----------------------------------------------------
+  "course.band": "Course check",
+  "course.title": "The approved plan against recorded emissions",
+  "course.lead":
+    "The action plan promises a monthly abatement; recorded monthly emissions either match it or they do not. All figures are stored calculations — no language model arithmetic.",
+  "course.thRequired": "Required monthly",
+  "course.thActual": "Actual monthly",
+  "course.thStatus": "Status",
+  "course.onTrack":
+    "On track: recorded {actual} tCO₂e/mo is below the {baseline} minus {required} the plan needs — the approved plan is being delivered.",
+  "course.behind":
+    "Behind: recorded {actual} tCO₂e/mo is not yet below the plan's glide of {required} — the approved actions have not moved emissions yet.",
+  "course.noPlan": "No approved plan yet — approve actions from the ranked list to get a course check.",
+  "course.method": "Plan = approved actions' expected tonnes spread over the months since the first action; on track when recorded monthly emissions are at or below the plan's implied glide path.",
+  "course.mo": "tCO₂e/mo",
 
   // --- trend chart --------------------------------------------------------
   "chart.recorded": "Recorded",

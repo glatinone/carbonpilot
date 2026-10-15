@@ -7,6 +7,8 @@ import { RecommendationCard } from "@/components/RecommendationCard";
 import { DecisionMatrix } from "@/components/DecisionMatrix";
 import { MacCurve } from "@/components/MacCurve";
 import { PricingPanel } from "@/components/PricingPanel";
+import { SupplierTable } from "@/components/SupplierTable";
+import { CourseCheck } from "@/components/CourseCheck";
 import { EmptyState, ErrorBanner, Footnote, SectionHead, Skeleton } from "@/components/ui";
 import { useLocale } from "@/lib/i18n";
 import { formatTonnes, formatUsd } from "@/lib/format";
@@ -27,6 +29,8 @@ export default function ActionsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  // Bumped on every load so the course check re-fetches when the plan changes.
+  const [planTick, setPlanTick] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -37,6 +41,7 @@ export default function ActionsPage() {
       setActions(actionList.actions);
       setTotals(actionList.totals);
       setNote(actionList.note);
+      setPlanTick((tick) => tick + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load the action plan");
     } finally {
@@ -224,6 +229,12 @@ export default function ActionsPage() {
               </div>
             )}
           </section>
+
+          {/* Where procurement carbon sits — always below the plan. */}
+          <SupplierTable />
+
+          {/* The approved plan against recorded emissions. */}
+          <CourseCheck refreshKey={planTick} />
         </>
       )}
     </div>

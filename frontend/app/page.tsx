@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { AskPilot } from "@/components/AskPilot";
 import { TrendChart } from "@/components/TrendChart";
+import { TrajectoryPanel } from "@/components/TrajectoryPanel";
 import { Emphasised, ErrorBanner, Footnote, SectionHead, Skeleton, Stat } from "@/components/ui";
 import { useDashboard } from "@/lib/hooks";
 import { useLocale, useStreamLabel } from "@/lib/i18n";
@@ -71,6 +72,14 @@ export default function DashboardPage() {
                 })}
               </span>
               <span className="text-[13px] text-ink-muted">{t("dash.perYear")}</span>
+              {baseline.intensity_tco2e_per_musd != null && (
+                <span className="fig text-[12.5px] text-ink-muted">
+                  {baseline.intensity_tco2e_per_musd.toLocaleString(locale === "id" ? "id-ID" : "en-US", {
+                    maximumFractionDigits: 1,
+                  })}{" "}
+                  {t("dash.intensity")}
+                </span>
+              )}
               {data.trend_pct !== null && (
                 <span
                   className={`fig border border-rule-strong px-2 py-0.5 text-[11.5px] ${
@@ -275,6 +284,9 @@ export default function DashboardPage() {
           </ul>
         </section>
       </div>
+
+      {/* Cost of a stated target — the executive beat. */}
+      <TrajectoryPanel />
 
       <div className="mt-8">
         <Footnote>

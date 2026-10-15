@@ -72,6 +72,8 @@ const id: Record<string, string> = {
   "dash.gridRegion": "Region grid · {region}",
   "dash.footprint": "Perkiraan jejak, disetahunkan",
   "dash.perYear": "tCO₂e / tahun",
+  "dash.intensity": "tCO₂e per $1M belanja terpantau",
+  "dash.intensityNote": "jejak dibagi biaya operasional terpantau",
   "dash.vsPrev": "{pct} vs bulan sebelumnya",
   "dash.largestLine": "{stream} adalah lini terbesar, {pct}% dari jejak karbon",
   "dash.largestLine2": ", dan {stream} berubah {pct} pada {month}.",
@@ -368,6 +370,50 @@ const id: Record<string, string> = {
     "Pada {price}/tCO₂e bahkan aksi terbaik ({leader_title}) masih berbiaya {leader_net_usd}/tahun lebih besar daripada karbon yang dihematnya — harga ini belum cukup tinggi untuk membalik peringkat.",
   "pricing.method":
     "Deterministik: tonase baseline × harga, posisi bersih tiap aksi adalah dampak biaya yang terbukti ditambah nilai karbon (ton × harga) dari ton yang dihematnya. Kalimat putusan dirakit mesin dari kolom terstruktur, tidak pernah ditulis model.",
+
+  // --- jalur target ----------------------------------------------------
+  "tray.band": "Jalur komitmen",
+  "tray.title": "Biaya dari target yang dinyatakan",
+  "tray.lead":
+    "Nyatakan target pengurangan dan tahun target; mesin menggambar jalur linier dari jejak hari ini ke target dan memberi harga setiap tahun pada harga karbon. Deterministik: target diterapkan linier sepanjang tahun, biaya = ton × harga.",
+  "tray.inputPct": "Target pengurangan (%)",
+  "tray.inputYear": "Tahun target",
+  "tray.price": "Harga karbon ($/tCO₂e)",
+  "tray.run": "Proyeksikan jalur",
+  "tray.running": "Memproyeksikan…",
+  "tray.thYear": "Tahun",
+  "tray.thProjected": "tCO₂e terproyeksi",
+  "tray.thCost": "Biaya karbon pada harga",
+  "tray.method":
+    "Jalur linier dari baseline ke target sepanjang tahun antara sekarang dan tahun target; biaya per tahun = ton terproyeksi × harga di atas.",
+  "tray.incomplete": "Belum ada baseline untuk memproyeksikan jalur — muat data aktivitas dulu.",
+
+  // --- atribusi supplier -------------------------------------------------
+  "sup.band": "Lensa supplier",
+  "sup.title": "Di mana karbon pengadaan berada",
+  "sup.note": "belanja pengadaan dipecah ke segmen tetap",
+  "sup.thSegment": "Segmen",
+  "sup.thShare": "Porsi",
+  "sup.thSpend": "Belanja (USD)",
+  "sup.thTco2e": "tCO₂e tertanam",
+  "sup.footnote": "{note}",
+  "sup.empty": "Tidak ada lini pengadaan di data.",
+
+  // --- pemeriksaan arah ----------------------------------------------------
+  "course.band": "Cek arah",
+  "course.title": "Rencana yang disetujui vs emisi tercatat",
+  "course.lead":
+    "Rencana aksi menjanjikan pengurangan bulanan; emisi bulanan tercatat selaras atau tidak. Semua angka adalah perhitungan tersimpan — tanpa aritmetika model bahasa.",
+  "course.thRequired": "Diwajibkan bulanan",
+  "course.thActual": "Aktual bulanan",
+  "course.thStatus": "Status",
+  "course.onTrack":
+    "On track: aktual {actual} tCO₂e/bln berada di bawah {baseline} dikurangi {required} yang dibutuhkan rencana — rencana yang disetujui sedang terjalankan.",
+  "course.behind":
+    "Tertinggal: aktual {actual} tCO₂e/bln belum di bawah jalur rencana {required} — aksi yang disetujui belum menggerakkan emisi.",
+  "course.noPlan": "Belum ada rencana disetujui — setujui aksi dari daftar peringkat untuk mendapat cek arah.",
+  "course.method": "Rencana = ton harapan aksi disetujui dibagi bulan sejak aksi pertama; on track saat emisi bulanan tercatat berada di atau di bawah jalur yang tersirat rencana.",
+  "course.mo": "tCO₂e/bln",
 
   // --- trend chart --------------------------------------------------------
   "chart.recorded": "Tercatat",

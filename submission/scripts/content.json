@@ -20,7 +20,7 @@
       "saved_usd": "775,000",
       "feasible": "342",
       "evaluated": "2,098",
-      "tests": "105",
+      "tests": "138",
       "tools": "13"
     }
   },
@@ -133,13 +133,13 @@
     {
       "kind": "verified",
       "kicker": "Verified, not claimed",
-      "title": "105 tests. A smoke test that fails on a working-looking key. One process.",
+      "title": "138 tests. A smoke test that fails on a working-looking key. One process.",
       "bullets": [
-        {"lead": "Behaviour contracts, not snapshots.", "text": "A projection plus its saving equals the baseline. Constraint search only ever returns scenarios that satisfy the constraints. 105 tests, runnable without credentials."},
+        {"lead": "Behaviour contracts, not snapshots.", "text": "A projection plus its saving equals the baseline. Constraint search only ever returns scenarios that satisfy the constraints. 138 tests, runnable without credentials."},
         {"lead": "Preflight makes invisible failure visible.", "text": "A dead key produces no error — it produces a correct answer from the deterministic router while the UI still claims the model. The smoke test exists to catch exactly that."},
         {"lead": "Every claim checkable.", "text": "pytest, tsc --noEmit, production build and preflight outputs are in the repository with the commands that produced them."}
       ],
-      "foot": "Verified 2026-10-04: backend 32s · frontend typecheck + static export ~1 min · preflight READY, 13 OK.",
+      "foot": "Verified 2026-10-15: backend 36s · frontend typecheck + static export ~1 min · preflight READY — agent answers by real Gemini; two honest warnings: 16 approved actions on the plan, curated-only factors (no Climatiq key).",
       "notes": "This is the credibility slide: every acceptance claim in this deck maps to a command in the repo."
     },
     {
@@ -175,7 +175,7 @@
       "figures": [
         {"kicker": "Grids benchmarked", "value": "20", "unit": "JAPAC"},
         {"kicker": "Languages", "value": "2", "unit": "EN / ID"},
-        {"kicker": "Tests green", "value": "105", "unit": "pytest"}
+        {"kicker": "Tests green", "value": "138", "unit": "pytest"}
       ],
       "notes": "Impact here is honest: the benchmark is open data, the product is bilingual, and the engine-over-model rule is the transferable idea."
     },

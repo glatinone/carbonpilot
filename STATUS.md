@@ -10,6 +10,31 @@ topology, `DESIGN.md` is the design system. This file is what is true *now*.
 
 ---
 
+## 2026-10-15 — Submission readiness audit (claims vs live)
+
+Full acceptance audit before the 18 Oct deadline. Every headline claim in the
+deck/one-pager/README was re-verified live; stale numbers were corrected and the
+artifacts rebuilt. State now: **138 tests** (135 + 3 new), tsc exit 0, build 7
+routes, deployed, preflight **READY**.
+
+- The "342 of 2,098 feasible" claim turned out correct — re-hit with the UI's
+  exact payload (`min_carbon_reduction_pct: 15, max_cost_increase_usd: 0`) gives
+  342; my first probe used aliases and got 425, which looked like drift but was a
+  different call. Its behavior contract is `scenarios_evaluated == 2098` and the
+  recommended plan 33.8%, 3,790 t, −$775K all match live.
+- **Fixed LLM bug** (real): Gemini id was 404ing on the Zenmux gateway, the agent
+  silently fell back to the deterministic router while the UI claimed Gemini —
+  exactly the "dead key" failure preflight exists to catch. Root cause: resolver
+  picked `bytedance/doubao-seedream-5.0-flash` (a video model) off the gateway's
+  48-id list. Fix: resolver now ranks only the `google/` namespace + new
+  regression tests; server `.env` → `GEMINI_MODEL=google/gemini-3.1-flash-lite`.
+- Claims updated 105 → **138 tests** in content.json, one-pager, README, pitch HTML,
+  brief; deck/one-pager PDFs rebuilt. Deck foot made honest: ready with 16
+  approved actions and curated-only factors.
+- 16 opportunities approved → 16 actions on the plan, course check computes.
+
+---
+
 ## 2026-10-15 — Level 1-4 (quick features)
 
 One agent attempt died (provider balance) before writing anything, so the parent

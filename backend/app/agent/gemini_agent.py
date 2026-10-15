@@ -112,15 +112,22 @@ def _resolve_model(client, preferred: str) -> str:
         if name.split("/")[-1] == bare:
             return name
 
+    # Gateways mix vendors in one list (bytedance/, qwen/, ...). A Gemini
+    # chat agent must never resolve onto an image or video model from another
+    # vendor — rank only the google/ namespace when it exists.
+    google = [name for name in available if name.startswith("google/")]
+    candidates = google or available
+
     # Otherwise take the newest-looking non-specialised flash model.
     def rank(name: str) -> tuple:
         lowered = name.lower()
         penalised = any(
-            token in lowered for token in ("image", "tts", "audio", "embedding", "veo", "imagen")
+            token in lowered
+            for token in ("image", "tts", "audio", "embedding", "veo", "imagen", "video")
         )
         return (penalised, "preview" in lowered, "flash" not in lowered, name)
 
-    return sorted(available, key=rank)[0]
+    return sorted(candidates, key=rank)[0]
 
 
 # --------------------------------------------------------------------------- #

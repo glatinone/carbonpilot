@@ -24,7 +24,7 @@ Alur inti: Measure → Diagnose → Simulate → Act (enam layar, satu loop).
   2. Lokasi grid = variabel keputusan. 20 grid JAPAC, satu basis dokumentasi, CC BY 4.0.
   3. Satu proses. Tidak ada CORS layer, tidak ada procurement project.
   4. Trade-off ada di halaman: matriks + MAC curve + kalimat perbandingan dihitung mesin.
-  5. Verifiable: 105+ tes, preflight yang gagal saat key diam-diam mati.
+  5. Verifiable: 138+ tes, preflight yang gagal saat key diam-diam mati.
 
 ## 3. Anchor numbers (sudah diverifikasi di instance deployed)
 
@@ -34,7 +34,7 @@ Alur inti: Measure → Diagnose → Simulate → Act (enam layar, satu loop).
 - Load: 4.304.333 kWh → Indonesia 3.036 tCO2e (rank 19/20, coal 69%) vs NZ 399 tCO2e
 - Demo hero: "turun 15% tanpa naik biaya" → hasil 33,8% turun + hemat $775K/thn,
   342 skenario feasible dari 2.098 dievaluasi
-- Kredibilitas: 105+ tes pytest · 13 tools · preflight 13 OK
+- Kredibilitas: 138+ tes pytest · 13 tools · preflight 13 OK
 
 ## 4. Story arc (11 slide, dari deck submission yang sudah ada)
 
@@ -46,7 +46,7 @@ Alur inti: Measure → Diagnose → Simulate → Act (enam layar, satu loop).
 5. Rule — model tidak pernah menghasilkan angka karbon.
 6. Demo — constraint search: 15% → 33,8% & −$775K, 342 dari 2.098.
 7. Tech — 13 tools, first turn forced, cited retrieval, satu proses.
-8. Verified — 105 tes, preflight.
+8. Verified — 138 tes, preflight.
 9. Market — akui kategori dulu, lalu klaim sempit.
 10. Impact & roadmap — 20 grid CC BY 4.0, EN/ID, pattern engine-over-model.
 11. Closing — loop + URL + "submitted to AI Builder Cup 2026".

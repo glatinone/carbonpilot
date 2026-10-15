@@ -345,7 +345,7 @@ docs/        the images used by this README
 ## Tests and the demo smoke test
 
 ```bash
-cd backend && .venv/Scripts/python.exe -m pytest -q      # 105 tests
+cd backend && .venv/Scripts/python.exe -m pytest -q      # 138 tests
 cd frontend && npm run typecheck
 ```
 

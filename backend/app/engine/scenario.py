@@ -247,9 +247,13 @@ def find_feasible(
                 "min_carbon_reduction_pct": min_carbon_reduction_pct,
                 "max_cost_increase_usd": max_cost_increase_usd,
             },
+            "scenarios_evaluated": 0,
             "feasible": [],
             "infeasible": [],
             "message": "No candidate interventions available — ingest activity data first.",
+            "message_key": "sim.searchNoCatalog",
+            "feasible_count": 0,
+            "infeasible_count": 0,
         }
 
     # One variant per activity type keeps the search space tractable and stops
@@ -320,6 +324,12 @@ def find_feasible(
     )
 
     chosen = feasible[0] if feasible else None
+    # Structured rather than prose only, like _neighbour_note: the counts and a
+    # message key travel, and the wording is chosen per language at render time
+    # because the UI is bilingual. The English `message` stays on the payload —
+    # the agent reads this result as tool data, and consumers that predate the
+    # key must keep working unchanged.
+    feasible_count = len(feasible)
     return {
         "constraints": {
             "min_carbon_reduction_pct": min_carbon_reduction_pct,
@@ -331,13 +341,16 @@ def find_feasible(
         "infeasible": infeasible[:limit],
         "recommended": chosen,
         "message": (
-            f"{len(feasible)} of {len(evaluated)} evaluated scenarios satisfy both constraints."
-            if feasible
+            f"{feasible_count} of {len(evaluated)} evaluated scenarios satisfy both constraints."
+            if feasible_count
             else (
                 f"No scenario satisfies both constraints ({len(evaluated)} evaluated). "
                 "Closest alternatives are listed under infeasible."
             )
         ),
+        "message_key": "sim.searchFeasible" if feasible_count else "sim.searchInfeasible",
+        "feasible_count": feasible_count,
+        "infeasible_count": len(infeasible),
     }
 
 

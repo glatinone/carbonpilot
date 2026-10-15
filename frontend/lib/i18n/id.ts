@@ -33,6 +33,14 @@ const id: Record<string, string> = {
   "effort.low": "usaha rendah",
   "effort.medium": "usaha sedang",
   "effort.high": "usaha tinggi",
+  // Satu kata untuk sel tabel, di mana "usaha rendah" terlalu berat.
+  "effortShort.low": "rendah",
+  "effortShort.medium": "sedang",
+  "effortShort.high": "tinggi",
+  // cost_direction, enum dari mesin yang ditampilkan di simulator.
+  "cost.saving": "penghematan",
+  "cost.increase": "kenaikan",
+  "cost.neutral": "netral",
   "shape.long": "Format panjang",
   "shape.wide": "Format lebar",
   "status.open": "terbuka",
@@ -152,6 +160,15 @@ const id: Record<string, string> = {
   "sim.searching": "Mencari skenario…",
   "sim.evaluated": "({n} skenario dievaluasi)",
   "sim.best": "Skenario terbaik yang memenuhi",
+  // Kalimat hasil pencarian batasan: mesin mengirim message_key + angkanya,
+  // redaksinya dipilih di sini per bahasa.
+  "sim.searchFeasible": "{feasible} dari {evaluated} skenario yang dievaluasi memenuhi kedua batasan.",
+  "sim.searchInfeasible":
+    "Tidak ada skenario yang memenuhi kedua batasan ({evaluated} dievaluasi). Alternatif terdekat tercantum pada daftar yang tidak memenuhi.",
+  "sim.searchNoCatalog": "Belum ada kandidat intervensi — unggah data aktivitas dulu.",
+  "sim.carbonCut": "{pct}% karbon",
+  "sim.perYear": "/tahun",
+  "sim.confidence": "keyakinan {pct}%",
   "sim.thScenario": "Skenario",
   "sim.thCarbon": "Karbon",
   "sim.thCost": "Biaya",

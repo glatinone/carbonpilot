@@ -30,7 +30,12 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CarbonPilot — AI Carbon Decision Engine",
+  // Subpages override the page segment of this template; the default covers
+  // the dashboard and anything without its own title.
+  title: {
+    template: "%s — CarbonPilot",
+    default: "CarbonPilot — AI Carbon Decision Engine",
+  },
   description:
     "Measure. Diagnose. Simulate. Act. Turn operational data into prioritised, financially-aware decarbonisation decisions.",
 };

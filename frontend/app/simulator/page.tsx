@@ -12,6 +12,37 @@ import { useDashboard } from "@/lib/hooks";
 
 type Slider = { activity_type: string; title: string; effort: string; preset: number; costRatio: number };
 
+/**
+ * The constraint payload as the simulator renders it: on top of the shared
+ * contract, the engine sends a message key plus the counts that fill it — the
+ * numbers travel, the wording is chosen per language here, the same split the
+ * recommendation tradeoff note uses. All three are optional so a payload that
+ * predates them still type-checks (and still renders, from `message`).
+ */
+type ConstraintSearchPayload = ConstraintSearch & {
+  message_key?: string;
+  feasible_count?: number;
+  infeasible_count?: number;
+};
+
+/**
+ * Constraint sentence for the active locale. A payload carrying `message_key`
+ * renders through t() with the engine's counts; a payload without one (older
+ * engine) falls back to the English `message`, and a key missing from both
+ * dictionaries degrades to that same sentence instead of a raw identifier.
+ */
+function searchMessage(
+  search: ConstraintSearchPayload,
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): string {
+  if (!search.message_key) return search.message;
+  const rendered = t(search.message_key, {
+    feasible: search.feasible_count ?? search.feasible.length,
+    evaluated: search.scenarios_evaluated,
+  });
+  return rendered === search.message_key ? search.message : rendered;
+}
+
 export default function SimulatorPage() {
   const { t } = useLocale();
   const streamLabel = useStreamLabel();
@@ -25,7 +56,7 @@ export default function SimulatorPage() {
   // Constraint mode
   const [targetPct, setTargetPct] = useState(15);
   const [costCeiling, setCostCeiling] = useState(0);
-  const [search, setSearch] = useState<ConstraintSearch | null>(null);
+  const [search, setSearch] = useState<ConstraintSearchPayload | null>(null);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
 
@@ -229,7 +260,9 @@ export default function SimulatorPage() {
                   >
                     {formatUsd(result.impact.cost_delta_usd)}
                   </p>
-                  <p className="mt-1 text-[10.5px] text-ink-faint">{result.impact.cost_direction}</p>
+                  <p className="mt-1 text-[10.5px] text-ink-faint">
+                    {t(`cost.${result.impact.cost_direction}`)}
+                  </p>
                 </div>
                 <div>
                   <p className="kicker">{t("sim.interventions")}</p>
@@ -350,7 +383,7 @@ export default function SimulatorPage() {
         {search && (
           <div className="mt-6">
             <p className="text-[12.5px] text-ink-muted">
-              {search.message}{" "}
+              {searchMessage(search, t)}{" "}
               <span className="fig text-ink-faint">
                 {t("sim.evaluated", { n: search.scenarios_evaluated })}
               </span>
@@ -364,16 +397,16 @@ export default function SimulatorPage() {
                 </p>
                 <div className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-1.5">
                   <span className="fig text-[13px] text-save">
-                    −{search.recommended.carbon_reduction_pct.toFixed(1)}% carbon
+                    −{t("sim.carbonCut", { pct: search.recommended.carbon_reduction_pct.toFixed(1) })}
                   </span>
                   <span className="fig text-[13px] text-ink">
-                    {formatUsd(search.recommended.cost_delta_usd)}/yr
+                    {formatUsd(search.recommended.cost_delta_usd)}{t("sim.perYear")}
                   </span>
                   <span className="text-[11.5px] text-ink-muted">
-                    {search.recommended.effort} effort
+                    {t(`effort.${search.recommended.effort}`)}
                   </span>
                   <span className="fig text-[11.5px] text-ink-muted">
-                    {search.recommended.confidence_pct.toFixed(0)}% confidence
+                    {t("sim.confidence", { pct: search.recommended.confidence_pct.toFixed(0) })}
                   </span>
                 </div>
               </div>
@@ -399,7 +432,7 @@ export default function SimulatorPage() {
                           −{scenario.carbon_reduction_pct.toFixed(1)}%
                         </td>
                         <td>{formatUsd(scenario.cost_delta_usd)}</td>
-                        <td>{scenario.effort}</td>
+                        <td>{t(`effortShort.${scenario.effort}`)}</td>
                         <td>{scenario.confidence_pct.toFixed(0)}%</td>
                       </tr>
                     ))}

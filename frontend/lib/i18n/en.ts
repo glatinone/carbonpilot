@@ -32,6 +32,14 @@ const en: Record<string, string> = {
   "effort.low": "low effort",
   "effort.medium": "medium effort",
   "effort.high": "high effort",
+  // Single-word effort for table cells, where "low effort" would be too heavy.
+  "effortShort.low": "low",
+  "effortShort.medium": "medium",
+  "effortShort.high": "high",
+  // cost_direction, an engine enum rendered in the simulator.
+  "cost.saving": "saving",
+  "cost.increase": "increase",
+  "cost.neutral": "neutral",
   "shape.long": "Long format",
   "shape.wide": "Wide format",
   "status.open": "open",
@@ -151,6 +159,15 @@ const en: Record<string, string> = {
   "sim.searching": "Searching scenarios…",
   "sim.evaluated": "({n} scenarios evaluated)",
   "sim.best": "Best feasible scenario",
+  // Constraint-search sentence: the engine sends message_key + counts, the
+  // wording is chosen here per language.
+  "sim.searchFeasible": "{feasible} of {evaluated} evaluated scenarios satisfy both constraints.",
+  "sim.searchInfeasible":
+    "No scenario satisfies both constraints ({evaluated} evaluated). Closest alternatives are listed under infeasible.",
+  "sim.searchNoCatalog": "No candidate interventions available — ingest activity data first.",
+  "sim.carbonCut": "{pct}% carbon",
+  "sim.perYear": "/yr",
+  "sim.confidence": "{pct}% confidence",
   "sim.thScenario": "Scenario",
   "sim.thCarbon": "Carbon",
   "sim.thCost": "Cost",

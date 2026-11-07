@@ -5,8 +5,9 @@
 Companies can already measure their carbon footprint. CarbonPilot answers the next
 question: **what should we do about it?**
 
-**Live demo:** <https://rakazo-civo.tail1b51ed.ts.net:8443>
-**Pitch deck:** <https://rakazo-civo.tail1b51ed.ts.net:8443/pitch/>
+**Live demo:** <https://rakazo-civo.tail1b51ed.ts.net:8443> · **Pitch deck:** <https://rakazo-civo.tail1b51ed.ts.net:8443/pitch/>
+(self-hosted behind a Tailscale Funnel, so it is not always online; the walkthrough below,
+[`submission/demo.mp4`](submission/demo.mp4) and the [Quick start](#quick-start) show the same app)
 
 ![Walkthrough](docs/images/walkthrough.gif)
 
@@ -71,7 +72,7 @@ emission factor.
 
 ## What makes it different
 
-Four claims, each of which you can check in this repository.
+Five claims, each of which you can check in this repository.
 
 ### 1. The language model cannot produce a carbon number
 
@@ -249,7 +250,7 @@ change, not a UI one. Stated here rather than hidden.
 
 ## Quick start
 
-Two terminals.
+Requirements: Python 3.12 with [uv](https://docs.astral.sh/uv/), and Node.js with npm. Two terminals.
 
 **Backend**
 
@@ -262,6 +263,8 @@ cp .env.example .env                    # add GEMINI_API_KEY (optional — see b
 .venv/Scripts/python -m uvicorn app.main:app --reload --port 8008
 ```
 
+- The paths above are for Windows. On macOS or Linux use `.venv/bin/python` instead of
+  `.venv/Scripts/python`.
 - API docs: http://localhost:8008/docs
 - Without a Gemini key the app still runs end to end: the agent falls back to a deterministic
   router and the UI labels the response `Deterministic engine` instead of `Gemini`.
@@ -273,6 +276,10 @@ cd frontend
 npm install
 npm run dev            # http://localhost:3000
 ```
+
+The dev UI calls the API at `http://127.0.0.1:8008` (set in `frontend/.env.development`). For the
+single-process setup, `npm run build` exports the UI to `frontend/out`, which the FastAPI backend
+then serves on the same port as the API; see [`DEPLOY.md`](DEPLOY.md).
 
 > If your Gemini deployment uses namespaced model ids (e.g. a gateway that exposes
 > `google/gemini-2.5-flash`), set `GEMINI_MODEL` in `backend/.env` to the exact id. A `404
@@ -430,3 +437,8 @@ the measurement layer — not a competitor to a funded platform.
   curated factor against the live published one and cite it. Without one, the tool says so.
   Curated factors stay the calculation source of truth either way, so a rehearsed demo cannot
   move because a third party changed a number.
+
+## License
+
+Code: MIT, see [`LICENSE`](LICENSE). Third-party data keeps its own licence as listed above
+(Ember grid data is CC BY 4.0).
